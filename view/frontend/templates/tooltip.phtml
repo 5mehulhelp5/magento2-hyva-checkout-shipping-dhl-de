@@ -1,0 +1,38 @@
+<?php
+
+declare(strict_types=1);
+
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+
+/** @var Escaper $escaper */
+/** @var Template $block */
+/** @var HeroiconsOutline $heroicons */
+$heroicons = $viewModels->require(HeroiconsOutline::class);
+?>
+<div
+    x-data="{ tooltipVisible: false }"
+    class="relative tooltip ml-auto"
+>
+    <button
+        type="button"
+        x-on:mouseenter.self="tooltipVisible = true"
+        x-on:mouseleave.self="tooltipVisible = false"
+        x-on:click="tooltipVisible = !tooltipVisible"
+        x-on:click.outside="tooltipVisible = false"
+        class="align-middle hover:cursor-pointer opacity-75 hover:opacity-100"
+        aria-label="<?= $escaper->escapeHtmlAttr(__('More information')) ?>"
+    >
+        <?= $heroicons->questionMarkCircleHtml('', 24, 24, ['aria-hidden' => 'true']) ?>
+    </button>
+    <div
+        role="tooltip"
+        class="absolute top-full right-0 mt-3 px-3 py-2 bg-gray-500 text-white shadow-lg rounded-md w-80"
+        x-show="tooltipVisible"
+        x-cloak
+    >
+        <div class="absolute right-3 -top-3 h-3 w-3 bg-inherit rotate-45 transform origin-bottom-left"></div>
+        <?= $escaper->escapeHtml($block->getText()) ?>
+    </div>
+</div>

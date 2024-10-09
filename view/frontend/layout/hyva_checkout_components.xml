@@ -1,0 +1,106 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <update handle="hyva_modal"/>
+    <body>
+       <referenceBlock name="checkout.shipping.methods">
+            <block name="checkout.shipping.method.dhlpaket_bestway"
+                   as="dhlpaket_bestway"
+                   template="Hyva_HyvaShippingDhl::component/shipping/method/dhlpaket_bestway.phtml">
+                <arguments>
+                    <argument name="magewire" xsi:type="object">
+                        Hyva\HyvaShippingDhl\Magewire\DeliveryOptions
+                    </argument>
+                    <argument name="metadata" xsi:type="array">
+                        <item name="title" xsi:type="string">DHL</item>
+                        <item name="icon" xsi:type="array">
+                            <item name="src" xsi:type="string">Dhl_ShippingCore::images/logo-dhl.svg</item>
+                            <item name="attributes" xsi:type="array">
+                                <item name="width" xsi:type="number">100</item>
+                                <item name="loading" xsi:type="string">lazy</item>
+                                <item name="alt" xsi:type="string" translate="true">DHL</item>
+                            </item>
+                        </item>
+                    </argument>
+                </arguments>
+
+                <!-- PARCEL ANNOUNCEMENT -->
+                <block name="checkout.shipping.method.dhlpaket_bestway_pickup"
+                       as="dhlpaket_bestway_parcel_announcement"
+                       ifconfig="dhlshippingsolutions/dhlpaket/additional_services/parcelannouncement"
+                       template="Hyva_HyvaShippingDhl::magewire/parcel_announcement.phtml">
+                    <arguments>
+                        <argument name="magewire" xsi:type="object">
+                            Hyva\HyvaShippingDhl\Magewire\ParcelAnnouncement
+                        </argument>
+                    </arguments>
+                </block>
+
+                <!-- PREFERRED DAY -->
+                <block name="checkout.shipping.method.dhlpaket_bestway_preferred_day"
+                       as="dhlpaket_bestway_preferred_day"
+                       ifconfig="dhlshippingsolutions/dhlpaket/additional_services/preferredday"
+                       template="Hyva_HyvaShippingDhl::magewire/preferred_day.phtml">
+                    <arguments>
+                        <argument name="magewire" xsi:type="object">
+                            Hyva\HyvaShippingDhl\Magewire\PreferredDay
+                        </argument>
+                    </arguments>
+                </block>
+
+                <!-- PACKSTATIONS -->
+                <block name="checkout.shipping.method.dhlpaket_bestway_packstation"
+                       as="dhlpaket_bestway_parcel_packstation"
+                       ifconfig="dhlshippingsolutions/dhlpaket/additional_services/deliverylocation"
+                       template="Hyva_HyvaShippingDhl::magewire/parcel_packstation.phtml">
+                    <arguments>
+                        <argument name="magewire" xsi:type="object">
+                            Hyva\HyvaShippingDhl\Magewire\ParcelPackstation
+                        </argument>
+                    </arguments>
+                    <block name="checkout.shipping.method.dhlpaket_packstation_modal"
+                           as="dhlpaket_bestway_parcel_packstation_modal"
+                           template="Hyva_HyvaShippingDhl::magewire/parcel_packstation_modal.phtml">
+                    </block>
+                </block>
+
+                <!-- PREFERRED LOCATION -->
+                <block name="checkout.shipping.method.dhlpaket_bestway_preferred_location"
+                       as="dhlpaket_preferred_location"
+                       ifconfig="dhlshippingsolutions/dhlpaket/additional_services/preferredlocation"
+                       template="Hyva_HyvaShippingDhl::magewire/preferred_location.phtml">
+                    <arguments>
+                        <argument name="magewire" xsi:type="object">
+                            Hyva\HyvaShippingDhl\Magewire\PreferredLocation
+                        </argument>
+                    </arguments>
+                </block>
+
+                <!-- PREFERRED NEIGHBOR -->
+                <block name="checkout.shipping.method.dhlpaket_bestway_preferred_neighbor"
+                       as="dhlpaket_preferred_neighbor"
+                       ifconfig="dhlshippingsolutions/dhlpaket/additional_services/preferredneighbour"
+                       template="Hyva_HyvaShippingDhl::magewire/preferred_neighbor.phtml">
+                    <arguments>
+                        <argument name="magewire" xsi:type="object">
+                            Hyva\HyvaShippingDhl\Magewire\PreferredNeighbor
+                        </argument>
+                    </arguments>
+                </block>
+
+                <!-- NO NEIGHBOR -->
+                <block name="checkout.shipping.method.dhlpaket_bestway_no_neighbor"
+                       as="dhlpaket_no_neighbor"
+                       ifconfig="dhlshippingsolutions/dhlpaket/additional_services/no_neighbor_delivery"
+                       template="Hyva_HyvaShippingDhl::magewire/no_neighbor.phtml">
+                    <arguments>
+                        <argument name="magewire" xsi:type="object">
+                            Hyva\HyvaShippingDhl\Magewire\NoNeighbor
+                        </argument>
+                    </arguments>
+                </block>
+
+            </block>
+        </referenceBlock>
+    </body>
+</page>

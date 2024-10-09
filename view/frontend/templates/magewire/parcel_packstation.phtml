@@ -1,0 +1,125 @@
+<?php 
+
+declare(strict_types=1);
+
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+use Hyva\HyvaShippingDhl\Magewire\CheckoutOptions;
+use Hyva\HyvaShippingDhl\ViewModel\Tooltip;
+use Hyva\Theme\ViewModel\Modal;
+
+/** @var Escaper $escaper */
+/** @var Template $block */
+/** @var CheckoutOptions $magewire */
+/** @var Tooltip $tooltip */
+$tooltip = $viewModels->require(Tooltip::class);
+?>
+
+<div>
+    <div class="flex flex-row items-start">
+        <p for="parcelPackstation" 
+               class="inline-flex items-start gap-x-4">
+            <span class="font-semibold">
+                <?= $escaper->escapeHtml(__('Deliver to a DHL parcel station, parcel shop or postal outlet')) ?>
+            </span>
+        </p>
+        <?= $tooltip->render(__('Adjust your parcel delivery flexibly to your schedule. Receive your packages while on the go at one of over 28,000 pickup locations in Germany - at a DHL parcel station or post office. Wherever it best suits your needs.')) ?>
+    </div>
+    
+    <?php if (!$magewire->checkAndSetShippingAddress()): ?>
+        <p class="message warning p-4 bg-gray-100 rounded-lg mt-2">
+            <?= $escaper->escapeHtml(__('Please provide your delivery address before selecting a pickup point.')) ?>
+        </p>
+    <?php else: ?>
+        <div class="ml-4 mr-10">
+            <?php if (empty($magewire->deliveryLocation['id'])): ?>
+                <p class="messages pl-8 py-2">
+                    <button class="w-auto btn btn-secondary" 
+                            type="button"
+                            wire:click="openModal"
+                            aria-haspopup="dialog">
+                        <span><?= $escaper->escapeHtml(__('Find DHL Pickup Location')) ?></span>
+                    </button>
+                </p>
+            <?php endif; ?>
+            
+            <?php if ($magewire->modalOpened): ?>
+                <?php /*?> hyva.modal() does not work with leadflat <?php */?>
+                 <div class="fixed inset-0 flex items-center justify-center text-left bg-black bg-opacity-50 z-30">
+                     <div role="dialog" aria-labelledby="the-label"
+                          class="inline-block max-h-screen bg-white shadow-xl rounded-lg p-10 text-gray-700">
+                        <?= /* @noEscape */ $block->getChildHtml('dhlpaket_bestway_parcel_packstation_modal') ?>
+                     </div> 
+                </div>
+            <?php endif; ?>
+            <div class="flex flex-row items-start mt-3 gap-x-3">
+                
+                <div class="flex-grow">                    
+                    <?php if (!empty($magewire->deliveryLocation['displayName'])): ?>
+                        <p class="font-semibold"><?= $escaper->escapeHtml($magewire->deliveryLocation['displayName']); ?></p>
+                    <?php endif; ?>
+                    
+                    <?php if (!empty($magewire->deliveryLocation['company'])): ?>
+                        <p><?= $escaper->escapeHtml($magewire->deliveryLocation['company']); ?></p>
+                    <?php endif; ?>                    
+
+                    <?php if (!empty($magewire->deliveryLocation['street'])): ?>
+                        <p><?= $escaper->escapeHtml($magewire->deliveryLocation['street']); ?></p>
+                    <?php endif; ?>
+
+                    <p>
+                        <?php if (!empty($magewire->deliveryLocation['postalCode'])): ?>
+                            <span><?= $escaper->escapeHtml($magewire->deliveryLocation['postalCode']); ?></span>
+                        <?php endif; ?>
+
+                        <?php if (!empty($magewire->deliveryLocation['city'])): ?>
+                            <span><?= $escaper->escapeHtml($magewire->deliveryLocation['city']); ?></span>
+                        <?php endif; ?>
+                    </p>
+
+                    <?php if (!empty($magewire->deliveryLocation['enabled'])): ?>
+                        <button class="w-auto btn btn-secondary mt-2" 
+                                type="button"
+                                wire:click="clearPackstation">
+                            <span><?= $escaper->escapeHtml(__('Remove')) ?></span>
+                        </button>
+                    
+                        <div class="my-3 flex flex-col items-start justify-start field field-reserved">
+                            <div class="inline-flex">
+                                <label class="label font-bold mr-3" 
+                                       for="customerPostnumber">
+                                    <?= $escaper->escapeHtml(__('DHL Post Number' . ': ')) ?>
+                                </label> 
+                                <?= $tooltip->render(__('The post number is your personal identification code that you receive with your registration at DHL.')) ?>
+                            </div>
+                            <input name="customerPostnumber"
+                                   pattern=".{6,}"       
+                                   min="6" 
+                                   max="10"
+                                   type="text"
+                                   id="customerPostnumber"
+                                   <?php if (isset($magewire->deliveryLocation['type']) && $magewire->deliveryLocation['type'] === 'locker'): ?>
+                                        required
+                                   <?php endif; ?>
+                                   class="block w-full form-input grow renderer-text"
+                                   placeholder="<?= $escaper->escapeHtmlAttr(__('Your personal post number')) ?>" 
+                                   aria-describedby="<?= $escaper->escapeHtmlAttr(__('Your personal post number')) ?>"
+                                   title="<?= $escaper->escapeHtmlAttr(__('Please enter more than or equal to 6 characters')) ?>"
+                                   wire:model.lazy="deliveryLocation.customerPostnumber"
+                                   data-validate='{"magewire": true}' 
+                                   data-magewire-is-valid="<?= (int) !$magewire->hasError('deliveryLocation.customerPostnumber') ?>"
+                                   <?php if ($magewire->hasError('deliveryLocation.customerPostnumber')): ?>
+                                       data-msg-magewire="<?= $escaper->escapeHtmlAttr($magewire->getError('deliveryLocation.customerPostnumber')) ?>"
+                                   <?php endif; ?>
+                                   @change="validate()"
+                                   >  
+                        </div>
+                        <p class="text-xs mt-3">
+                            <?= $escaper->escapeHtml(__('You must enter your DHL post number when sending it to a DHL parcel station. For DHL postal outlet or parcel shop delivery, the DHL post number is optional.')) ?>  
+                        </p>
+                    <?php endif; ?>
+                </div>
+            </div> 
+        </div>
+    <?php endif; ?>
+</div>

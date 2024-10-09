@@ -1,0 +1,32 @@
+<?php
+
+declare(strict_types=1);
+
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+use Magento\Framework\Pricing\Helper\Data as CurrencyHelper;
+use Hyva\HyvaShippingDhl\Magewire\CheckoutOptions;
+use Hyva\HyvaShippingDhl\ViewModel\Tooltip;
+
+/** @var Escaper $escaper */
+/** @var Template $block */
+/** @var PreferredDay $magewire */
+/** @var Tooltip $tooltip */
+/** @var CurrencyHelper $currency */
+$tooltip = $viewModels->require(Tooltip::class);
+$currency = $this->helper(CurrencyHelper::class);
+$feenote = __('This service will incur additional shipping costs of $1 including VAT.')->render();
+$feenote = str_replace('$1', $currency->currency($magewire->fee, true, false), $feenote);
+?>
+
+<div>
+    <div class="flex flex-row items-start">
+        <h4 class="font-semibold">
+            <?= $escaper->escapeHtml(__('Delivery Day: Delivery on your preferred day')) ?>
+        </h4>
+        <?= $tooltip->render(__('Choose one of the displayed days for your parcel delivery. Other days are not possible due to delivery processes.')) ?>
+    </div>
+    <p class="text-sm ml-10 pl-2">
+        <?= $escaper->escapeHtml($feenote); ?>
+    </p>
+</div>
