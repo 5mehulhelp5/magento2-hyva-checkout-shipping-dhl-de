@@ -149,20 +149,20 @@ class ShippingOptions extends Component
      */
     protected function getShippingAddress(): ?\Magento\Quote\Model\Quote\Address
     {
-        if (!$quote = $this->getQuote()) {
-            return false;
+        $quote = $this->getQuote();
+        if (!$quote) {
+            return null;
         }
 
         $address = $quote->getShippingAddress();
-
-        if (!$address->getId()) {
+        if (!$address || !$address->getId()) {
             $this->dispatchErrorMessage(__('Shipping address not found'));
-            $address = false;
+            return null;
         }
 
         return $address;
     }
-
+    
     /**
      * @return int|null
      * @throws LocalizedException
