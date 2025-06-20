@@ -3,6 +3,12 @@
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <update handle="hyva_modal"/>
     <body>
+        <referenceContainer name="magewire.plugin.scripts">
+            <!-- add the script -->
+            <block name="checkout.shipping.method.dhlpaket_bestway_packstation_js"
+                   template="Hyva_HyvaShippingDhl::magewire/parcel_packstation_modal_js.phtml"
+            />
+       </referenceContainer>
        <referenceBlock name="checkout.shipping.methods">
             <block name="checkout.shipping.method.dhlpaket_bestway"
                    as="dhlpaket_bestway"
