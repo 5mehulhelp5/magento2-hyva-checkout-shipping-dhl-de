@@ -87,7 +87,8 @@ $heroicons = $viewModels->require(HeroiconsOutline::class);
             },
             fetchLocations(hasRetried = false) {
                 this.isLoading = true;
-                this.initialAddress = JSON.parse(JSON.stringify(this.address)); 
+                //this.initialAddress = JSON.parse(JSON.stringify(this.address)); 
+                this.initialAddress = { ...this.address };
 
                 fetch(`${BASE_URL}rest/de/V1/nrshipping/delivery-locations/dhlpaket/search`, {
                     method: 'POST',
@@ -305,13 +306,10 @@ $heroicons = $viewModels->require(HeroiconsOutline::class);
                 this.centerToNextLocation();
             },
             centerToNextLocation() {
-                const visibleLocation = this.locations.find(location => {
-                    return (this.visibility.postoffice && location.shop_type === 'postoffice') ||
-                           (this.visibility.locker && location.shop_type === 'locker') ||
-                           (this.visibility.servicepoint && location.shop_type === 'servicepoint');
-                });
-                if (visibleLocation) {
-                    this.map.setView([visibleLocation.latitude, visibleLocation.longitude]);
+                const visible = this.locations.filter(loc => this.visibility[loc.shop_type]);
+                if (visible.length > 0) {
+                    const bounds = L.latLngBounds(visible.map(loc => [loc.latitude, loc.longitude]));
+                    this.map.fitBounds(bounds, { maxZoom: 15 });
                 }
             },
             onCloseParcelShopDetail() {
@@ -338,12 +336,15 @@ $heroicons = $viewModels->require(HeroiconsOutline::class);
                 }
             },
             onSelectParcelShop(event) {
+                const raw = event.currentTarget?.dataset?.parcel;
+                if (!raw) return;
+
                 try {
-                    const raw = decodeURIComponent(event.currentTarget.dataset.parcel);
-                    const data = JSON.parse(raw);
+                    const decoded = decodeURIComponent(raw);
+                    const data = JSON.parse(decoded);
                     this.setParcelShops(data);
                 } catch (e) {
-                    console.error('Could not parse parcel data', e);
+                    this.errorHandler('Invalid parcel data: ' + e.message);
                 }
             },
             errorHandler(message) {
