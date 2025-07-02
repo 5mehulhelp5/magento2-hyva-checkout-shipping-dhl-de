@@ -65,6 +65,10 @@ class ParcelPackstation extends ShippingOptions
                 }
             }
         }
+        
+        if (!empty($this->deliveryLocation['id'])) {
+            $this->deliveryLocation['enabled'] = true;
+        }
     }
 
     /**
