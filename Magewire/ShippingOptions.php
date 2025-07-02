@@ -191,6 +191,11 @@ class ShippingOptions extends Component
     protected function getExistingQuoteSelections(): array
     {
         $addressId = $this->getAddressId();
+
+        if ($addressId === null) {
+            return [];
+        }
+
         return $this->quoteSelectionManager->load($addressId);
     }
 
