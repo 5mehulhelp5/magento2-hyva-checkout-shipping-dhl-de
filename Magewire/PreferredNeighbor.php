@@ -34,7 +34,7 @@ class PreferredNeighbor extends ShippingOptions
     ];
 
     /**
-     * @return void
+     * Initializes the component by loading existing preferred neighbor details from the database.
      */
     public function mount(): void
     {
@@ -53,6 +53,8 @@ class PreferredNeighbor extends ShippingOptions
     }
 
     /**
+     * Dispatches an event to notify other components about the current preferred neighbor details.
+     *
      * @return void
      */
     protected function dispatchEmit(): void
@@ -64,6 +66,9 @@ class PreferredNeighbor extends ShippingOptions
     }
 
     /**
+     * Initializes the component's state and dispatches the initial preferred neighbor details.
+     * This method is called after mount, for client-side hydration.
+     *
      * @return void
      */
     public function init(): void
@@ -91,36 +96,36 @@ class PreferredNeighbor extends ShippingOptions
 
     /**
      * Updates the preferred neighbor's name.
-     * 
+     *
      * @param string $value
-     * @return mixed
+     * @return string // Changed from mixed to string for more precision
      */
-    public function updatedPreferredNeighborName(string $value): mixed
+    public function updatedPreferredNeighborName(string $value): string
     {
         // Emit the event
         $this->dispatchEmit();
 
         return $this->persistFieldUpdate(
-            'name', 
-            $value, 
+            'name',
+            $value,
             Codes::SERVICE_OPTION_NEIGHBOR_DELIVERY
         );
     }
 
     /**
      * Updates the preferred neighbor's address.
-     * 
+     *
      * @param string $value
-     * @return mixed
+     * @return string // Changed from mixed to string for more precision
      */
-    public function updatedPreferredNeighborAddress(string $value): mixed
+    public function updatedPreferredNeighborAddress(string $value): string
     {
         // Emit the event
         $this->dispatchEmit();
 
         return $this->persistFieldUpdate(
-            'address', 
-            $value, 
+            'address',
+            $value,
             Codes::SERVICE_OPTION_NEIGHBOR_DELIVERY
         );
     }
