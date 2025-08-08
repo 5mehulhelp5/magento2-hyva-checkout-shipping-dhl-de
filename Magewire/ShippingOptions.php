@@ -23,7 +23,7 @@ use Magento\Framework\Exception\LocalizedException;
 
 class ShippingOptions extends Component
 {
-    /**
+/**
      * @var ModuleConfig
      */
     protected ModuleConfig $moduleConfig;
@@ -67,7 +67,7 @@ class ShippingOptions extends Component
      * @var QuoteSelectionRepository
      */
     protected QuoteSelectionRepository $quoteSelectionRepository;
-    
+
     /**
      * @var MapBoxConfig Holds the Mapbox configuration.
      */
@@ -86,16 +86,16 @@ class ShippingOptions extends Component
      * @param MapBoxConfig $mapBoxConfig
      */
     public function __construct(
-        ModuleConfig                $moduleConfig,
-        StoreManagerInterface       $storeManager,
+        ModuleConfig $moduleConfig,
+        StoreManagerInterface $storeManager,
         CheckoutManagementInterface $checkoutManagement,
-        QuoteSelectionFactory       $quoteSelectionFactory,
-        QuoteSelectionManager       $quoteSelectionManager,
-        ShippingOptionInterface     $shippingOption,
-        CheckoutSession             $checkoutSession,
-        ScopeConfigInterface        $scopeConfig,
-        QuoteSelectionRepository    $quoteSelectionRepository,
-        MapBoxConfig                $mapBoxConfig
+        QuoteSelectionFactory $quoteSelectionFactory,
+        QuoteSelectionManager $quoteSelectionManager,
+        ShippingOptionInterface $shippingOption,
+        CheckoutSession $checkoutSession,
+        ScopeConfigInterface $scopeConfig,
+        QuoteSelectionRepository $quoteSelectionRepository,
+        MapBoxConfig $mapBoxConfig
     ) {
         $this->moduleConfig = $moduleConfig;
         $this->storeManager = $storeManager;
@@ -111,7 +111,7 @@ class ShippingOptions extends Component
 
     /**
      * @param string $code
-     * @return array
+     * @return SelectionInterface[]
      */
     protected function loadFromDb(string $code): array
     {
@@ -127,24 +127,21 @@ class ShippingOptions extends Component
     }
 
     /**
-     * @return false|\Magento\Quote\Api\Data\CartInterface|\Magento\Quote\Model\Quote
+     * @return \Magento\Quote\Api\Data\CartInterface|null
      * @throws LocalizedException
      */
     protected function getQuote(): ?\Magento\Quote\Api\Data\CartInterface
     {
-        $quote = false;
-
         try {
-            $quote = $this->checkoutSession->getQuote();
+            return $this->checkoutSession->getQuote();
         } catch (NoSuchEntityException $e) {
             $this->dispatchErrorMessage($e->getMessage());
+            return null; // Explizit null zurückgeben im Fehlerfall
         }
-
-        return $quote;
     }
 
     /**
-     * @return false|\Magento\Quote\Model\Quote\Address
+     * @return \Magento\Quote\Model\Quote\Address|null
      * @throws LocalizedException
      */
     protected function getShippingAddress(): ?\Magento\Quote\Model\Quote\Address
@@ -201,7 +198,7 @@ class ShippingOptions extends Component
 
     /**
      * @param QuoteSelection $quoteSelection
-     * @return mixed
+     * @return array
      * @throws LocalizedException
      * @throws NoSuchEntityException
      */
@@ -226,13 +223,12 @@ class ShippingOptions extends Component
 
         $this->checkoutManagement->updateShippingOptionSelections($quoteId, $quoteSelections);
 
-        // Rückgabe der aktualisierten Selections
         return $quoteSelections;
     }
     
     /**
      * Generic function to persist the updated field.
-     * 
+     *
      * @param string $field
      * @param mixed $value
      * @param string $shippingOptionCode
