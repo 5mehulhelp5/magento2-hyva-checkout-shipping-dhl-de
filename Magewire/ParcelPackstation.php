@@ -8,8 +8,6 @@ use Magewirephp\Magewire\Component;
 use Netresearch\ShippingCore\Model\ShippingSettings\ShippingOption\Codes as Codes;
 use Dhl\Paket\Model\ShippingSettings\ShippingOption\Codes as DhlCodes;
 use Netresearch\ShippingCore\Api\Data\ShippingSettings\ShippingOption\Selection\SelectionInterface;
-use Hyva\Checkout\Model\Magewire\Component\EvaluationResultFactory;
-use Hyva\Checkout\Model\Magewire\Component\EvaluationResultInterface;
 
 class ParcelPackstation extends ShippingOptions
 {
@@ -22,7 +20,7 @@ class ParcelPackstation extends ShippingOptions
      * @var array Stores the shipping address details.
      */
     public array $shippingAddress = [];
-    
+
     /**
      * @var array Stores the delivery location data.
      */
@@ -77,15 +75,18 @@ class ParcelPackstation extends ShippingOptions
      * @param string $field
      * @param mixed $value
      */
-    public function updateDeliveryLocationField(string $field, $value): void
+    public function updateDeliveryLocationField(string $field, mixed $value): void // <-- mixed als Typ hinzugefügt
     {
-        if ($field === 'customerPostnumber') {
-            $this->updatedDeliveryLocationCustomerPostnumber($value);
-        } else {
-            if (array_key_exists($field, $this->deliveryLocation)) {
-                $this->deliveryLocation[$field] = $value;
-                $this->persistFieldUpdate($field, $value, Codes::SERVICE_OPTION_DELIVERY_LOCATION);
+        if (array_key_exists($field, $this->deliveryLocation)) {
+            $this->deliveryLocation[$field] = $value;
+
+            $inputCode = $field;
+            // Spezialfall für die Postnummer, da sie einen anderen Codes-Konstanten verwendet
+            if ($field === 'customerPostnumber') {
+                $inputCode = DhlCodes::SERVICE_INPUT_DELIVERY_LOCATION_ACCOUNT_NUMBER;
             }
+
+            $this->persistFieldUpdate($inputCode, $value, Codes::SERVICE_OPTION_DELIVERY_LOCATION);
         }
     }
 
@@ -110,11 +111,42 @@ class ParcelPackstation extends ShippingOptions
     public function clearPackstation(): void
     {
         foreach ($this->deliveryLocation as $key => $value) {
-            $this->updateDeliveryLocationField($key, '');
+            $this->deliveryLocation[$key] = '';
         }
-        $this->updateDeliveryLocationField('enabled', false);
+        $this->deliveryLocation['enabled'] = false; 
 
-        $this->emitToRefresh('checkout.shipping.method.dhlpaket_bestway_packstation');
+        $selectionsToClear = [];
+        foreach ($this->deliveryLocation as $key => $value) {
+            $quoteSelection = $this->quoteSelectionFactory->create();
+
+            $inputCode = ($key === 'customerPostnumber') ? DhlCodes::SERVICE_INPUT_DELIVERY_LOCATION_ACCOUNT_NUMBER : $key;
+            $quoteSelection->setData([
+                SelectionInterface::SHIPPING_OPTION_CODE => Codes::SERVICE_OPTION_DELIVERY_LOCATION,
+                SelectionInterface::INPUT_CODE => $inputCode,
+                SelectionInterface::INPUT_VALUE => (string)$value
+            ]);
+            $selectionsToClear[] = $quoteSelection;
+        }
+
+        try {
+            // Hole die aktuelle Quote ID (kann hier ggf. fehlschlagen)
+            $quoteId = (int) $this->checkoutSession->getQuote()->getId();
+            // Rufe die updateShippingOptionSelections-Methode in der Basisklasse auf.
+            // Diese Methode wird dann die Netresearch\ShippingCore\Model\ShippingSettings\CheckoutManagement::updateShippingOptionSelections aufrufen,
+            // die wiederum den QuoteSelectionManager::save() aufruft.
+            // Der QuoteSelectionManager::save() löscht alle alten Selections und speichert die neuen.
+            $this->checkoutManagement->updateShippingOptionSelections($quoteId, $selectionsToClear);
+
+            // Optional: Wenn du willst, dass nach dem Leeren die Versandmethoden neu geladen werden,
+            // ist dieser Emit sinnvoll. Aber es sollte automatisch passieren, wenn sich die Lieferadresse ändert.
+            // Beachte, dass 'checkout.shipping.method.dhlpaket_bestway_packstation' sehr spezifisch ist.
+            // Ein generischeres Event wie 'shipping_method_updated' wäre vielleicht besser,
+            // wenn deine Versandmethoden auf so etwas reagieren.
+            $this->emitToRefresh('checkout.shipping.method.dhlpaket_bestway_packstation');
+
+        } catch (\Exception $e) {
+            $this->dispatchErrorMessage(__('Failed to clear Packstation data: %1', $e->getMessage()));
+        }
     }
 
     /**
@@ -127,17 +159,50 @@ class ParcelPackstation extends ShippingOptions
         if (isset($data['deliveryLocation'])) {
             $data = $data['deliveryLocation'];
         }
-        
+
         $this->closeModal();
-        foreach ($data as $key => $value) {
-            if (array_key_exists($key, $this->deliveryLocation)) {
-                $this->deliveryLocation[$key] = $value;
-                $this->persistFieldUpdate($key, $value, Codes::SERVICE_OPTION_DELIVERY_LOCATION);
+
+        $selectionsToSave = [];
+        foreach ($this->deliveryLocation as $key => $defaultValue) { // Iteriere über alle erwarteten Felder
+            $value = $data[$key] ?? $defaultValue; // Nutze den übergebenen Wert oder den Standardwert
+            $this->deliveryLocation[$key] = $value; // Aktualisiere die Magewire Property
+
+            $inputCode = $key;
+            // Spezialfall für die Postnummer, da sie einen anderen Codes-Konstanten verwendet
+            if ($key === 'customerPostnumber') {
+                $inputCode = DhlCodes::SERVICE_INPUT_DELIVERY_LOCATION_ACCOUNT_NUMBER;
             }
+
+            $quoteSelection = $this->quoteSelectionFactory->create();
+            $quoteSelection->setData([
+                SelectionInterface::SHIPPING_OPTION_CODE => Codes::SERVICE_OPTION_DELIVERY_LOCATION,
+                SelectionInterface::INPUT_CODE => $inputCode,
+                SelectionInterface::INPUT_VALUE => (string)$value // Sicherstellen, dass es ein String ist
+            ]);
+            $selectionsToSave[] = $quoteSelection;
         }
 
-        $this->deliveryLocation['enabled'] = true;
-        $this->persistFieldUpdate('enabled', true, Codes::SERVICE_OPTION_DELIVERY_LOCATION);        
+        $this->deliveryLocation['enabled'] = true; // Setze enabled explizit
+
+        // Füge auch die 'enabled' Selection hinzu
+        $enabledSelection = $this->quoteSelectionFactory->create();
+        $enabledSelection->setData([
+            SelectionInterface::SHIPPING_OPTION_CODE => Codes::SERVICE_OPTION_DELIVERY_LOCATION,
+            SelectionInterface::INPUT_CODE => 'enabled',
+            SelectionInterface::INPUT_VALUE => '1' // 'true' als String speichern
+        ]);
+        $selectionsToSave[] = $enabledSelection;
+
+        try {
+            $quoteId = (int) $this->checkoutSession->getQuote()->getId();
+            // Ein einziger Aufruf, der alle alten löscht und die neuen speichert
+            $this->checkoutManagement->updateShippingOptionSelections($quoteId, $selectionsToSave);
+        } catch (\Exception $e) {
+            $this->dispatchErrorMessage(__('Failed to set Packstation data: %1', $e->getMessage()));
+        }
+
+        // Optional: Emit to refresh if necessary, as for clearPackstation
+        // $this->emitToRefresh('checkout.shipping.method.dhlpaket_bestway_packstation');
     }
     
     /**
