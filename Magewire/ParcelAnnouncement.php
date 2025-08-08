@@ -16,7 +16,7 @@ class ParcelAnnouncement extends ShippingOptions
     public bool $parcelAnnouncement = false;
 
     /**
-     * Mount the component.
+     * Initializes the component by loading existing parcel announcement selection from the database.
      */
     public function mount(): void
     {
@@ -34,7 +34,7 @@ class ParcelAnnouncement extends ShippingOptions
      * Updates the parcel announcement state.
      * 
      * @param bool $value
-     * @return mixed
+     * @return bool
      */
     public function updatedParcelAnnouncement(bool $value): mixed
     {
