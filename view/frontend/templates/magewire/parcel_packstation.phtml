@@ -84,7 +84,9 @@ $tooltip = $viewModels->require(Tooltip::class);
                             <span><?= $escaper->escapeHtml(__('Remove')) ?></span>
                         </button>
                     
-                        <div class="my-3 flex flex-col items-start justify-start field field-reserved">
+                        <div class="my-3 flex flex-col items-start justify-start field field-reserved"
+                             x-data="customerPostnumber"
+                             data-type="<?= $escaper->escapeHtmlAttr($magewire->deliveryLocation['type'] ?? '') ?>">
                             <div class="inline-flex">
                                 <label class="label font-bold mr-3" 
                                        for="customerPostnumber">
@@ -98,6 +100,7 @@ $tooltip = $viewModels->require(Tooltip::class);
                                    max="10"
                                    type="text"
                                    id="customerPostnumber"
+                                   x-ref="postnumber"
                                    <?php if (isset($magewire->deliveryLocation['type']) && $magewire->deliveryLocation['type'] === 'locker'): ?>
                                         required
                                    <?php endif; ?>
@@ -106,13 +109,10 @@ $tooltip = $viewModels->require(Tooltip::class);
                                    aria-describedby="<?= $escaper->escapeHtmlAttr(__('Your personal post number')) ?>"
                                    title="<?= $escaper->escapeHtmlAttr(__('Please enter more than or equal to 6 characters')) ?>"
                                    wire:model.lazy="deliveryLocation.customerPostnumber"
-                                   data-validate='{"magewire": true}' 
-                                   data-magewire-is-valid="<?= (int) !$magewire->hasError('deliveryLocation.customerPostnumber') ?>"
-                                   <?php if ($magewire->hasError('deliveryLocation.customerPostnumber')): ?>
-                                       data-msg-magewire="<?= $escaper->escapeHtmlAttr($magewire->getError('deliveryLocation.customerPostnumber')) ?>"
-                                   <?php endif; ?>
-                                   @change="validate()"
-                                   >  
+                                   @blur="validate">
+                            <template x-if="errorMessage">
+                                <p class="message error mt-1" x-text="errorMessage" aria-live="polite"></p>
+                            </template>
                         </div>
                         <p class="text-xs mt-3">
                             <?= $escaper->escapeHtml(__('You must enter your DHL post number when sending it to a DHL parcel station. For DHL postal outlet or parcel shop delivery, the DHL post number is optional.')) ?>  
