@@ -351,9 +351,53 @@ $heroicons = $viewModels->require(HeroiconsOutline::class);
                 console.error(message);
             }
         }
+    };
+    function customerPostnumber() {
+        return {
+            value: '',
+            errorMessage: '',
+            inputElement: null,
+
+            init() {
+                this.$nextTick(() => {
+                    this.inputElement = this.$refs.postnumber;
+                    this.value = this.inputElement.value;
+
+                    this.$watch('$wire.deliveryLocation.customerPostnumber', (newValue) => {
+                        this.value = newValue;
+                        this.validate();
+                    });
+
+                    this.validate();
+                });
+            },
+
+            get isLocker() {
+                return this.$el.dataset.type === 'locker';
+            },
+
+            shouldRequirePostnumber() {
+                return this.isLocker && this.value.length > 0;
+            },  
+
+            validate() {
+                if (!this.isLocker) {
+                    this.errorMessage = '';
+                    return;
+                }
+
+                if (this.value.length < 6) {
+                    this.errorMessage = '<?= $escaper->escapeJs(__('Please enter more than or equal to 6 characters')) ?>';
+                } else {
+                    this.errorMessage = '';
+                    this.$wire.set('deliveryLocation.customerPostnumber', this.value);
+                }
+            }
+        };
     }
     window.addEventListener('alpine:init', () => {
-        Alpine.data('mapdata', mapdata)
+        Alpine.data('mapdata', mapdata),
+        Alpine.data('customerPostnumber', customerPostnumber)                             
     }, { once: true })
 </script>
 <?php $hyvaCsp->registerInlineScript() ?>
