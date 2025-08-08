@@ -70,18 +70,18 @@ class ParcelPackstation extends ShippingOptions
     }
 
     /**
-     * Aktualisiert ein spezifisches Feld in den Lieferort-Daten und speichert es.
+     * Updates a specific field in the delivery location data and saves it.
      *
      * @param string $field
      * @param mixed $value
      */
-    public function updateDeliveryLocationField(string $field, mixed $value): void // <-- mixed als Typ hinzugefügt
+    public function updateDeliveryLocationField(string $field, mixed $value): void
     {
         if (array_key_exists($field, $this->deliveryLocation)) {
             $this->deliveryLocation[$field] = $value;
 
             $inputCode = $field;
-            // Spezialfall für die Postnummer, da sie einen anderen Codes-Konstanten verwendet
+            // Special case for the post number, as it uses a different codes constant
             if ($field === 'customerPostnumber') {
                 $inputCode = DhlCodes::SERVICE_INPUT_DELIVERY_LOCATION_ACCOUNT_NUMBER;
             }
@@ -91,7 +91,7 @@ class ParcelPackstation extends ShippingOptions
     }
 
     /**
-     * Aktualisiert die DHL-Kundennummer (Postnummer) und speichert sie.
+     * Updates and saves the DHL customer number (post number).
      *
      * @param string $value
      * @return mixed
@@ -129,21 +129,9 @@ class ParcelPackstation extends ShippingOptions
         }
 
         try {
-            // Hole die aktuelle Quote ID (kann hier ggf. fehlschlagen)
             $quoteId = (int) $this->checkoutSession->getQuote()->getId();
-            // Rufe die updateShippingOptionSelections-Methode in der Basisklasse auf.
-            // Diese Methode wird dann die Netresearch\ShippingCore\Model\ShippingSettings\CheckoutManagement::updateShippingOptionSelections aufrufen,
-            // die wiederum den QuoteSelectionManager::save() aufruft.
-            // Der QuoteSelectionManager::save() löscht alle alten Selections und speichert die neuen.
             $this->checkoutManagement->updateShippingOptionSelections($quoteId, $selectionsToClear);
-
-            // Optional: Wenn du willst, dass nach dem Leeren die Versandmethoden neu geladen werden,
-            // ist dieser Emit sinnvoll. Aber es sollte automatisch passieren, wenn sich die Lieferadresse ändert.
-            // Beachte, dass 'checkout.shipping.method.dhlpaket_bestway_packstation' sehr spezifisch ist.
-            // Ein generischeres Event wie 'shipping_method_updated' wäre vielleicht besser,
-            // wenn deine Versandmethoden auf so etwas reagieren.
             $this->emitToRefresh('checkout.shipping.method.dhlpaket_bestway_packstation');
-
         } catch (\Exception $e) {
             $this->dispatchErrorMessage(__('Failed to clear Packstation data: %1', $e->getMessage()));
         }
@@ -163,12 +151,12 @@ class ParcelPackstation extends ShippingOptions
         $this->closeModal();
 
         $selectionsToSave = [];
-        foreach ($this->deliveryLocation as $key => $defaultValue) { // Iteriere über alle erwarteten Felder
-            $value = $data[$key] ?? $defaultValue; // Nutze den übergebenen Wert oder den Standardwert
-            $this->deliveryLocation[$key] = $value; // Aktualisiere die Magewire Property
+        foreach ($this->deliveryLocation as $key => $defaultValue) { 
+            $value = $data[$key] ?? $defaultValue; 
+            $this->deliveryLocation[$key] = $value; 
 
             $inputCode = $key;
-            // Spezialfall für die Postnummer, da sie einen anderen Codes-Konstanten verwendet
+            // Special case for the post number, as it uses a different codes constant
             if ($key === 'customerPostnumber') {
                 $inputCode = DhlCodes::SERVICE_INPUT_DELIVERY_LOCATION_ACCOUNT_NUMBER;
             }
@@ -177,38 +165,32 @@ class ParcelPackstation extends ShippingOptions
             $quoteSelection->setData([
                 SelectionInterface::SHIPPING_OPTION_CODE => Codes::SERVICE_OPTION_DELIVERY_LOCATION,
                 SelectionInterface::INPUT_CODE => $inputCode,
-                SelectionInterface::INPUT_VALUE => (string)$value // Sicherstellen, dass es ein String ist
+                SelectionInterface::INPUT_VALUE => (string)$value
             ]);
             $selectionsToSave[] = $quoteSelection;
         }
 
-        $this->deliveryLocation['enabled'] = true; // Setze enabled explizit
+        $this->deliveryLocation['enabled'] = true;
 
-        // Füge auch die 'enabled' Selection hinzu
         $enabledSelection = $this->quoteSelectionFactory->create();
         $enabledSelection->setData([
             SelectionInterface::SHIPPING_OPTION_CODE => Codes::SERVICE_OPTION_DELIVERY_LOCATION,
             SelectionInterface::INPUT_CODE => 'enabled',
-            SelectionInterface::INPUT_VALUE => '1' // 'true' als String speichern
+            SelectionInterface::INPUT_VALUE => '1' 
         ]);
         $selectionsToSave[] = $enabledSelection;
 
         try {
             $quoteId = (int) $this->checkoutSession->getQuote()->getId();
-            // Ein einziger Aufruf, der alle alten löscht und die neuen speichert
             $this->checkoutManagement->updateShippingOptionSelections($quoteId, $selectionsToSave);
         } catch (\Exception $e) {
             $this->dispatchErrorMessage(__('Failed to set Packstation data: %1', $e->getMessage()));
         }
-
-        // Optional: Emit to refresh if necessary, as for clearPackstation
-        // $this->emitToRefresh('checkout.shipping.method.dhlpaket_bestway_packstation');
     }
     
     /**
      * Validates if the shipping address is already set based on the checkout data.
-     * 
-     * @return bool
+     * * @return bool
      */
     public function checkAndSetShippingAddress(): bool
     {
@@ -239,8 +221,7 @@ class ParcelPackstation extends ShippingOptions
     
     /**
      * Opens the modal for delivery location.
-     * 
-     * @return bool True if the modal is opened.
+     * * @return bool True if the modal is opened.
      */
     public function openModal(): bool
     {
@@ -250,8 +231,7 @@ class ParcelPackstation extends ShippingOptions
 
     /**
      * Closes the modal for delivery location.
-     * 
-     * @return bool False if the modal is closed.
+     * * @return bool False if the modal is closed.
      */
     public function closeModal(): bool
     {
