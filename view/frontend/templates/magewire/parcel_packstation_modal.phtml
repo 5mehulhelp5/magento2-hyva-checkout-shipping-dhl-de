@@ -28,7 +28,7 @@ $shippingAddress = [
 <div x-data="mapdata"
      class="w-full h-full relative"
      data-mapbox-token="<?= $escaper->escapeHtmlAttr($magewire->getMapboxApiToken()) ?>"
-     data-shipping-address='<?= $escaper->escapeHtmlAttr(json_encode($shippingAddress)) ?>'>    
+     data-shipping-address="<?= $escaper->escapeHtmlAttr(json_encode($shippingAddress)) ?>">
     <button class="absolute right-0 top-0 p-6 cursor-pointer" 
             wire:click="closeModal" 
             type="button">
