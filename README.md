@@ -1,4 +1,4 @@
-Offices DHL Germany partner module for Magento
+DHL Germany partner module for Magento
 
 - Marketplace Link: https://commercemarketplace.adobe.com/dhl-shipping-m2.html
 - Github Link: https://github.com/netresearch/dhl-shipping-m2
