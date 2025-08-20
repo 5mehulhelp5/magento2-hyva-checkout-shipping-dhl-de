@@ -1,5 +1,5 @@
 {
-    "name": "hyva-themes/magento2-hyva-checkout-dhl-shipping-m2",
+    "name": "hyva-themes/magento2-hyva-checkout-dhl-shipping-de",
     "description": "This module enables the use of DHL shipping-m2 with Hyvä Checkout",
     "type": "magento2-module",
     "require": {
