@@ -5,18 +5,20 @@ declare(strict_types=1);
 use Magento\Framework\Escaper;
 use Magento\Framework\View\Element\Template;
 use Magento\Framework\Pricing\Helper\Data as CurrencyHelper;
-use Hyva\HyvaShippingDhl\Magewire\CheckoutOptions;
-use Hyva\HyvaShippingDhl\ViewModel\Tooltip;
+use Hyva\ShippingDhlDe\Magewire\PreferredDay;
+use Hyva\ShippingDhlDe\ViewModel\Tooltip;
+use Hyva\Checkout\ViewModel\Checkout\Formatter as FormatterViewModel;
 
 /** @var Escaper $escaper */
 /** @var Template $block */
 /** @var PreferredDay $magewire */
 /** @var Tooltip $tooltip */
-/** @var CurrencyHelper $currency */
 $tooltip = $viewModels->require(Tooltip::class);
-$currency = $this->helper(CurrencyHelper::class);
+/** @var FormatterViewModel $formatterViewModel */
+$formatterViewModel = $viewModels->require(FormatterViewModel::class);
+
 $feenote = __('This service will incur additional shipping costs of $1 including VAT.')->render();
-$feenote = str_replace('$1', $currency->currency($magewire->fee, true, false), $feenote);
+$feenote = str_replace('$1', $formatterViewModel->currency($magewire->fee), $feenote);
 ?>
 
 <div>

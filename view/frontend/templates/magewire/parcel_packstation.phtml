@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 use Magento\Framework\Escaper;
 use Magento\Framework\View\Element\Template;
-use Hyva\HyvaShippingDhl\Magewire\CheckoutOptions;
-use Hyva\HyvaShippingDhl\ViewModel\Tooltip;
+use Hyva\ShippingDhlDe\Magewire\ParcelPackstation;
+use Hyva\ShippingDhlDe\ViewModel\Tooltip;
 use Hyva\Theme\ViewModel\Modal;
 
 /** @var Escaper $escaper */
 /** @var Template $block */
-/** @var CheckoutOptions $magewire */
+/** @var ParcelPackstation $magewire */
 /** @var Tooltip $tooltip */
 $tooltip = $viewModels->require(Tooltip::class);
 ?>
@@ -23,7 +23,7 @@ $tooltip = $viewModels->require(Tooltip::class);
                 <?= $escaper->escapeHtml(__('Deliver to a DHL parcel station, parcel shop or postal outlet')) ?>
             </span>
         </p>
-        <?= $tooltip->render(__('Adjust your parcel delivery flexibly to your schedule. Receive your packages while on the go at one of over 28,000 pickup locations in Germany - at a DHL parcel station or post office. Wherever it best suits your needs.')) ?>
+        <?= /* @noEscape */ $tooltip->render(__('Adjust your parcel delivery flexibly to your schedule. Receive your packages while on the go at one of over 28,000 pickup locations in Germany - at a DHL parcel station or post office. Wherever it best suits your needs.')) ?>
     </div>
     
     <?php if (!$magewire->checkAndSetShippingAddress()): ?>
@@ -84,23 +84,22 @@ $tooltip = $viewModels->require(Tooltip::class);
                             <span><?= $escaper->escapeHtml(__('Remove')) ?></span>
                         </button>
                     
-                        <div class="my-3 flex flex-col items-start justify-start field field-reserved"
-                             x-data="customerPostnumber"
-                             data-type="<?= $escaper->escapeHtmlAttr($magewire->deliveryLocation['type'] ?? '') ?>">
+                        <div class="my-3 flex flex-col items-start justify-start field field-reserved">
                             <div class="inline-flex">
                                 <label class="label font-bold mr-3" 
-                                       for="customerPostnumber">
-                                    <?= $escaper->escapeHtml(__('DHL Post Number' . ': ')) ?>
+                                       for="customer-postnumber">
+                                    <?= $escaper->escapeHtml(__('DHL Post Number')) ?>
                                 </label> 
                                 <?= $tooltip->render(__('The post number is your personal identification code that you receive with your registration at DHL.')) ?>
                             </div>
-                            <input name="customerPostnumber"
-                                   pattern=".{6,}"       
-                                   min="6" 
-                                   max="10"
+                            <input name="customer-postnumber"
                                    type="text"
-                                   id="customerPostnumber"
-                                   x-ref="postnumber"
+                                   id="customer-postnumber"
+                                   data-validate='{"minlength":6,"customer-postnumber":true,"magewire":true}'
+                                   autocomplete="off"
+                                   maxlength="10"
+                                   pattern="\d*"
+                                   data-type="<?= $escaper->escapeHtmlAttr($magewire->deliveryLocation['type'] ?? '') ?>"
                                    <?php if (isset($magewire->deliveryLocation['type']) && $magewire->deliveryLocation['type'] === 'locker'): ?>
                                         required
                                    <?php endif; ?>
@@ -108,11 +107,10 @@ $tooltip = $viewModels->require(Tooltip::class);
                                    placeholder="<?= $escaper->escapeHtmlAttr(__('Your personal post number')) ?>" 
                                    aria-describedby="<?= $escaper->escapeHtmlAttr(__('Your personal post number')) ?>"
                                    title="<?= $escaper->escapeHtmlAttr(__('Please enter more than or equal to 6 characters')) ?>"
-                                   wire:model.lazy="deliveryLocation.customerPostnumber"
-                                   @blur="validate">
-                            <template x-if="errorMessage">
-                                <p class="message error mt-1" x-text="errorMessage" aria-live="polite"></p>
-                            </template>
+                                   wire:model.lazy="deliveryLocation.customerPostnumber">
+                            <?php if (!empty($magewire->postnumberError)): ?>
+                                <p class="message error mt-1" aria-live="polite"><?= $escaper->escapeHtml($magewire->postnumberError) ?></p>
+                            <?php endif; ?>
                         </div>
                         <p class="text-xs mt-3">
                             <?= $escaper->escapeHtml(__('You must enter your DHL post number when sending it to a DHL parcel station. For DHL postal outlet or parcel shop delivery, the DHL post number is optional.')) ?>  

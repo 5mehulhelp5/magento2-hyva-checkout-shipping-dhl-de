@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Hyva\HyvaShippingDhl\Magewire;
+namespace Hyva\ShippingDhlDe\Magewire;
 
 use Dhl\Paket\Model\Config\ModuleConfig;
 use Magento\Checkout\Model\Session as CheckoutSession;

@@ -2,48 +2,49 @@
 
 declare(strict_types=1);
 
-namespace Hyva\HyvaShippingDhl\Magewire;
+namespace Hyva\ShippingDhlDe\Magewire;
 
-use Magewirephp\Magewire\Component;
 use Netresearch\ShippingCore\Api\Data\ShippingSettings\ShippingOption\Selection\SelectionInterface;
 use Dhl\Paket\Model\ShippingSettings\ShippingOption\Codes;
+use Dhl\Paket\Model\Config\ModuleConfig; // Hinzugefügt
 
 class PreferredDay extends ShippingOptions
 {
     /**
-     * @var string
+     * @var string|null
      */
-    public string $preferredDay = '';
+    public ?string $preferredDay = null;
 
-    public $fee;
+    /**
+     * @var float
+     */
+    public float $fee = 0.0;
 
     /**
      * Mount the component.
      */
     public function mount() {
-        /** @var $quoteSelection SelectionInterface */
+        /** @var SelectionInterface[] $quoteSelections */
         $quoteSelections = $this->loadFromDb(Codes::SERVICE_OPTION_PREFERRED_DAY);
 
-        if ($quoteSelections) {
-            if (isset($quoteSelections['enabled'])) {
-                $this->preferredDay = $quoteSelections['enabled']->getInputValue();
-            }
+        if ($quoteSelections && isset($quoteSelections['enabled'])) {
+            $this->preferredDay = $quoteSelections['enabled']->getInputValue();
         }
 
-        $this->fee = $this->moduleConfig->getPreferredDayAdditionalCharge($this->storeManager->getStore()->getId());
+        $this->fee = (float) $this->scopeConfig->getValue(ModuleConfig::CONFIG_PATH_PREFERRED_DAY_CHARGE);
     }
 
     /**
      * Updates the preferred day for delivery.
-     * 
-     * @param $value
+     *
+     * @param ?string $value
      * @return mixed
      */
-    public function updatedPreferredDay($value): mixed
+    public function updatedPreferredDay(?string $value): mixed
     {
         return $this->persistFieldUpdate(
-            'date', 
-            $value, 
+            'date',
+            $value,
             Codes::SERVICE_OPTION_PREFERRED_DAY
         );
     }

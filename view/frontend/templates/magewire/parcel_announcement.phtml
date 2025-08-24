@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 use Magento\Framework\Escaper;
 use Magento\Framework\View\Element\Template;
-use Hyva\HyvaShippingDhl\Magewire\CheckoutOptions;
-use Hyva\HyvaShippingDhl\ViewModel\Tooltip;
+use Hyva\ShippingDhlDe\Magewire\ParcelAnnouncement;
+use Hyva\ShippingDhlDe\ViewModel\Tooltip;
 
 /** @var Escaper $escaper */
 /** @var Template $block */
-/** @var CheckoutOptions $magewire */
+/** @var ParcelAnnouncement $magewire */
 /** @var Tooltip $tooltip */
 $tooltip = $viewModels->require(Tooltip::class);
 ?>

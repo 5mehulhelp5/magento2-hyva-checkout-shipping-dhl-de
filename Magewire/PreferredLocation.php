@@ -2,9 +2,8 @@
 
 declare(strict_types=1);
 
-namespace Hyva\HyvaShippingDhl\Magewire;
+namespace Hyva\ShippingDhlDe\Magewire;
 
-use Magewirephp\Magewire\Component;
 use Dhl\Paket\Model\Config\ModuleConfig;
 use Dhl\Paket\Model\ShippingSettings\ShippingOption\Codes;
 use Netresearch\ShippingCore\Api\Data\ShippingSettings\ShippingOption\Selection\SelectionInterface;
@@ -29,7 +28,7 @@ class PreferredLocation extends ShippingOptions
     ];
 
     /**
-     * Mount the component.
+     * Initializes the component by loading existing preferred drop-off location selection from the database.
      */
     public function mount(): void
     {
@@ -44,6 +43,8 @@ class PreferredLocation extends ShippingOptions
     }
 
     /**
+     * Dispatches an event to notify other components about the current preferred location state.
+     *
      * @return void
      */
     protected function dispatchEmit(): void
@@ -52,6 +53,9 @@ class PreferredLocation extends ShippingOptions
     }
 
     /**
+     * Initializes the component's state and dispatches the initial preferred location.
+     * This method is called after mount, for client-side hydration.
+     *
      * @return void
      */
     public function init(): void
@@ -65,16 +69,19 @@ class PreferredLocation extends ShippingOptions
      */
     public function listenPreferredNeighbor(array $value): void
     {
-        $this->disabled = (!empty($value['preferredNeighborName'] || !empty($value['preferredNeighborAddress'])));
+        $hasNeighborName = !empty($value['preferredNeighborName']);
+        $hasNeighborAddress = !empty($value['preferredNeighborAddress']);
+
+        $this->disabled = ($hasNeighborName || $hasNeighborAddress);
     }
 
     /**
      * Updates the preferred location for drop-off delivery.
-     * 
+     *
      * @param string $value
-     * @return mixed
+     * @return string // Changed from mixed to string for more precision
      */
-    public function updatedPreferredLocation(string $value): mixed
+    public function updatedPreferredLocation(string $value): string
     {
         // Emit the event
         $this->dispatchEmit();

@@ -6,16 +6,16 @@
         <referenceContainer name="magewire.plugin.scripts">
             <!-- add the script -->
             <block name="checkout.shipping.method.dhlpaket_bestway_packstation_js"
-                   template="Hyva_HyvaShippingDhl::magewire/parcel_packstation_modal_js.phtml"
+                   template="Hyva_ShippingDhlDe::magewire/parcel_packstation_modal_js.phtml"
             />
        </referenceContainer>
        <referenceBlock name="checkout.shipping.methods">
             <block name="checkout.shipping.method.dhlpaket_bestway"
                    as="dhlpaket_bestway"
-                   template="Hyva_HyvaShippingDhl::component/shipping/method/dhlpaket_bestway.phtml">
+                   template="Hyva_ShippingDhlDe::component/shipping/method/dhlpaket_bestway.phtml">
                 <arguments>
                     <argument name="magewire" xsi:type="object">
-                        Hyva\HyvaShippingDhl\Magewire\DeliveryOptions
+                        Hyva\ShippingDhlDe\Magewire\DeliveryOptions
                     </argument>
                     <argument name="metadata" xsi:type="array">
                         <item name="title" xsi:type="string">DHL</item>
@@ -34,10 +34,10 @@
                 <block name="checkout.shipping.method.dhlpaket_bestway_pickup"
                        as="dhlpaket_bestway_parcel_announcement"
                        ifconfig="dhlshippingsolutions/dhlpaket/additional_services/parcelannouncement"
-                       template="Hyva_HyvaShippingDhl::magewire/parcel_announcement.phtml">
+                       template="Hyva_ShippingDhlDe::magewire/parcel_announcement.phtml">
                     <arguments>
                         <argument name="magewire" xsi:type="object">
-                            Hyva\HyvaShippingDhl\Magewire\ParcelAnnouncement
+                            Hyva\ShippingDhlDe\Magewire\ParcelAnnouncement
                         </argument>
                     </arguments>
                 </block>
@@ -46,10 +46,10 @@
                 <block name="checkout.shipping.method.dhlpaket_bestway_preferred_day"
                        as="dhlpaket_bestway_preferred_day"
                        ifconfig="dhlshippingsolutions/dhlpaket/additional_services/preferredday"
-                       template="Hyva_HyvaShippingDhl::magewire/preferred_day.phtml">
+                       template="Hyva_ShippingDhlDe::magewire/preferred_day.phtml">
                     <arguments>
                         <argument name="magewire" xsi:type="object">
-                            Hyva\HyvaShippingDhl\Magewire\PreferredDay
+                            Hyva\ShippingDhlDe\Magewire\PreferredDay
                         </argument>
                     </arguments>
                 </block>
@@ -58,15 +58,15 @@
                 <block name="checkout.shipping.method.dhlpaket_bestway_packstation"
                        as="dhlpaket_bestway_parcel_packstation"
                        ifconfig="dhlshippingsolutions/dhlpaket/additional_services/deliverylocation"
-                       template="Hyva_HyvaShippingDhl::magewire/parcel_packstation.phtml">
+                       template="Hyva_ShippingDhlDe::magewire/parcel_packstation.phtml">
                     <arguments>
                         <argument name="magewire" xsi:type="object">
-                            Hyva\HyvaShippingDhl\Magewire\ParcelPackstation
+                            Hyva\ShippingDhlDe\Magewire\ParcelPackstation
                         </argument>
                     </arguments>
                     <block name="checkout.shipping.method.dhlpaket_packstation_modal"
                            as="dhlpaket_bestway_parcel_packstation_modal"
-                           template="Hyva_HyvaShippingDhl::magewire/parcel_packstation_modal.phtml">
+                           template="Hyva_ShippingDhlDe::magewire/parcel_packstation_modal.phtml">
                     </block>
                 </block>
 
@@ -74,10 +74,10 @@
                 <block name="checkout.shipping.method.dhlpaket_bestway_preferred_location"
                        as="dhlpaket_preferred_location"
                        ifconfig="dhlshippingsolutions/dhlpaket/additional_services/preferredlocation"
-                       template="Hyva_HyvaShippingDhl::magewire/preferred_location.phtml">
+                       template="Hyva_ShippingDhlDe::magewire/preferred_location.phtml">
                     <arguments>
                         <argument name="magewire" xsi:type="object">
-                            Hyva\HyvaShippingDhl\Magewire\PreferredLocation
+                            Hyva\ShippingDhlDe\Magewire\PreferredLocation
                         </argument>
                     </arguments>
                 </block>
@@ -86,10 +86,10 @@
                 <block name="checkout.shipping.method.dhlpaket_bestway_preferred_neighbor"
                        as="dhlpaket_preferred_neighbor"
                        ifconfig="dhlshippingsolutions/dhlpaket/additional_services/preferredneighbour"
-                       template="Hyva_HyvaShippingDhl::magewire/preferred_neighbor.phtml">
+                       template="Hyva_ShippingDhlDe::magewire/preferred_neighbor.phtml">
                     <arguments>
                         <argument name="magewire" xsi:type="object">
-                            Hyva\HyvaShippingDhl\Magewire\PreferredNeighbor
+                            Hyva\ShippingDhlDe\Magewire\PreferredNeighbor
                         </argument>
                     </arguments>
                 </block>
@@ -98,14 +98,23 @@
                 <block name="checkout.shipping.method.dhlpaket_bestway_no_neighbor"
                        as="dhlpaket_no_neighbor"
                        ifconfig="dhlshippingsolutions/dhlpaket/additional_services/no_neighbor_delivery"
-                       template="Hyva_HyvaShippingDhl::magewire/no_neighbor.phtml">
+                       template="Hyva_ShippingDhlDe::magewire/no_neighbor.phtml">
                     <arguments>
                         <argument name="magewire" xsi:type="object">
-                            Hyva\HyvaShippingDhl\Magewire\NoNeighbor
+                            Hyva\ShippingDhlDe\Magewire\NoNeighbor
                         </argument>
                     </arguments>
                 </block>
-
+                
+                <!--GoGreenPlus-->
+                <block name="checkout.shipping-method.gogreen_plus"
+                       template="Hyva_ShippingDhlDe::magewire/gogreen_plus.phtml">
+                    <arguments>
+                        <argument name="magewire" xsi:type="object">
+                            Hyva\ShippingDhlDe\Magewire\GoGreenPlus
+                        </argument>
+                    </arguments>
+                </block>
             </block>
         </referenceBlock>
     </body>

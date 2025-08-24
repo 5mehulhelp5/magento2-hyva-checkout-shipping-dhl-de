@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use Magento\Framework\Escaper;
 use Magento\Framework\View\Element\Template;
-use Hyva\HyvaShippingDhl\Magewire\CheckoutOptions;
-use Hyva\HyvaShippingDhl\ViewModel\Tooltip;
+use Hyva\ShippingDhlDe\Magewire\PreferredLocation;
+use Hyva\ShippingDhlDe\ViewModel\Tooltip;
 
 /** @var Escaper $escaper */
 /** @var Template $block */
@@ -15,10 +15,10 @@ $tooltip = $viewModels->require(Tooltip::class);
 ?>
 <div>
     <div class="flex items-start gap-4 relative font-semibold mb-2">
-        <label for="preferred_location" class="flex flex-row items-start gap-x-4">
+        <label for="preferred_location" class="flex flex-row items-start gap-x-4 text-black">
             <span><?= $escaper->escapeHtml(__('Drop-off Location: Delivery to your preferred drop-off location')) ?></span>
         </label>
-        <?= $tooltip->render(__('Choose a weather-protected and non-visible place on your property where we can deposit the parcel in your absence.')) ?>
+        <?= /* @noEscape */ $tooltip->render(__('Choose a weather-protected and non-visible place on your property where we can deposit the parcel in your absence.')) ?>
     </div>
     <div class="ml-4 mr-10">
         <input wire:model.lazy="preferredLocation"

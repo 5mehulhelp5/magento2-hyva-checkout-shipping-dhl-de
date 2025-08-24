@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Hyva\Theme\Model\ViewModelRegistry;
-use Hyva\Theme\ViewModel\HyvaCsp;
 use Magento\Framework\Escaper;
 use Magento\Framework\View\Element\Template;
 use Hyva\Theme\ViewModel\HeroiconsOutline;
@@ -11,7 +10,6 @@ use Hyva\Theme\ViewModel\HeroiconsOutline;
 /** @var Escaper $escaper */
 /** @var Template $block */
 /** @var ViewModelRegistry $viewModels */
-/** @var HyvaCsp $hyvaCsp */
 
 /** @var HeroiconsOutline $heroicons */
 $heroicons = $viewModels->require(HeroiconsOutline::class);

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Hyva\HyvaShippingDhl\Magewire;
+namespace Hyva\ShippingDhlDe\Magewire;
 
-use Magewirephp\Magewire\Component;
+use Dhl\Paket\Model\Config\ModuleConfig;
 use Dhl\Paket\Model\ShippingSettings\ShippingOption\Codes;
 use Netresearch\ShippingCore\Api\Data\ShippingSettings\ShippingOption\Selection\SelectionInterface;
 

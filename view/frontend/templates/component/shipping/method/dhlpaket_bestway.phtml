@@ -12,11 +12,6 @@ use Hyva\HyvaShippingDhl\Magewire\DeliveryOptions;
 ?>
 <div class="nrshipping-settings-container p-4 border-solid border my-6 flex flex-col gap-y-1 text-gray-700"
      @shipping-country_id.window="Magewire.emitTo('checkout.shipping.method.dhlpaket_bestway', 'refresh');">
-    <img class="max-w-40 mb-4" 
-         src="<?= $escaper->escapeUrl($block->getViewFileUrl("Dhl_ShippingCore::images/logo-dhl.svg")); ?>" 
-         alt="<?= $escaper->escapeHtmlAttr(__('DHL')) ?>"
-         width="150" />
-
     <h3 class="text-base font-semibold"><?= $escaper->escapeHtml(__('DHL Preferred Delivery. Delivered just the way you want.')) ?></h3>
     <p><?= $escaper->escapeHtml(__('You decide when and where you want to receive your parcels with the recipient services of DHL.')) ?></p>
     <p><?= $escaper->escapeHtml(__('Please choose your preferred delivery options.')) ?></p>
@@ -27,13 +22,15 @@ use Hyva\HyvaShippingDhl\Magewire\DeliveryOptions;
             <?= /* @noEscape */ $block->getChildHtml('dhlpaket_bestway_parcel_packstation'); ?>
         
             <?php /*?>Integration of the additional costs still needs to be done.<?php */?>
-            <?//= /* @noEscape */ $block->getChildHtml('dhlpaket_bestway_preferred_day'); ?> 
+            <?= /* @noEscape */ $block->getChildHtml('dhlpaket_bestway_preferred_day'); ?> 
         
-            <?//= /* @noEscape */ $block->getChildHtml('dhlpaket_preferred_location'); ?>
+            <?= /* @noEscape */ $block->getChildHtml('dhlpaket_preferred_location'); ?>
             <?= /* @noEscape */ $block->getChildHtml('dhlpaket_preferred_neighbor'); ?>
             
             <?php /*?>Integration of the additional costs still needs to be done.<?php */?>
-            <?//= /* @noEscape */ $block->getChildHtml('dhlpaket_no_neighbor'); ?>
+            <?= /* @noEscape */ $block->getChildHtml('dhlpaket_no_neighbor'); ?>
+            
+            <?= /* @noEscape */ $block->getChildHtml('checkout.shipping-method.gogreen_plus'); ?>
         <?php endif; ?>
     </div>
 </div>

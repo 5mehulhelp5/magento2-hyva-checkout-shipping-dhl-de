@@ -8,7 +8,7 @@
 
 declare(strict_types=1);
 
-namespace Hyva\HyvaShippingDhl\ViewModel;
+namespace Hyva\ShippingDhlDe\ViewModel;
 
 use Magento\Framework\View\Element\Block\ArgumentInterface;
 use Magento\Framework\View\LayoutInterface;
@@ -38,7 +38,7 @@ class Tooltip implements ArgumentInterface
     public function render(Phrase $text): string
     {
         $block = $this->layout->createBlock(Template::class);
-        $block->setTemplate('Hyva_HyvaShippingDhl::tooltip.phtml')->setText($text);
+        $block->setTemplate('Hyva_ShippingDhlDe::tooltip.phtml')->setText($text);
         
         return $block->toHtml();
     }

@@ -8,4 +8,4 @@
 
 use Magento\Framework\Component\ComponentRegistrar;
 
-ComponentRegistrar::register(ComponentRegistrar::MODULE, 'Hyva_HyvaShippingDhl', __DIR__);
+ComponentRegistrar::register(ComponentRegistrar::MODULE, 'Hyva_ShippingDhlDe', __DIR__);

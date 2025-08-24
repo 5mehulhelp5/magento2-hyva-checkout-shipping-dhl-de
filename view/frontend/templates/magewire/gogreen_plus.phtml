@@ -1,17 +1,17 @@
-<?php 
+<?php
 
 declare(strict_types=1);
 
 use Magento\Framework\Escaper;
 use Magento\Framework\View\Element\Template;
 use Magento\Framework\Pricing\Helper\Data as CurrencyHelper;
-use Hyva\ShippingDhlDe\Magewire\NoNeighbor;
+use Hyva\ShippingDhlDe\Magewire\GoGreenPlus;
 use Hyva\ShippingDhlDe\ViewModel\Tooltip;
 use Hyva\Checkout\ViewModel\Checkout\Formatter as FormatterViewModel;
 
 /** @var Escaper $escaper */
 /** @var Template $block */
-/** @var NoNeighbor $magewire */
+/** @var GoGreenPlus $magewire */
 /** @var Tooltip $tooltip */
 $tooltip = $viewModels->require(Tooltip::class);
 /** @var FormatterViewModel $formatterViewModel */
@@ -24,25 +24,22 @@ $feenote = str_replace('$1', $formatterViewModel->currency($magewire->fee), $fee
 <div>
     <div class="flex items-center mb-6">
         <h4 class="font-semibold">
-            <?= $escaper->escapeHtml(__('No Neighbor Delivery: Discreet Dispatch')) ?>
+            <?= $escaper->escapeHtml(__('GoGreen Plus: Climate Neutral Shipping')) ?>
         </h4>
-        <?= $tooltip->render(__('Exclude an alternative delivery to the neighbor if you are not available when the delivery is made.')) ?>
+        <?= /* @noEscape */ $tooltip->render(__('Climate-neutral shipping with DHL GoGreen Plus. Available for domestic German shipments only.')) ?>
     </div>
-    <label class="inline-flex items-center gap-x-4 ml-4" 
-           for="noNeighbor">
-        <input wire:model="noNeighbor"
-               x-data="{ disabled: $wire.entangle('disabled') }"
-               type="checkbox"
-               id="noNeighbor"
+
+    <label class="inline-flex items-center gap-x-4 ml-4"
+           for="gogreen_plus_enabled">
+        <input id="gogreen_plus_enabled"
                class="field checkbox w-4 h-4 renderer-checkbox"
-               :class="disabled ? 'disabled:opacity-50' : ''"
-               x-bind:disabled="disabled"
-               wire:click="$emitTo('checkout.shipping.method.dhlpaket_bestway_preferred_neighbor', 'refresh')"
-        />
+               type="checkbox"
+               wire:model="goGreenPlusEnabled" />
         <span class="text-gray-700 hover:cursor-pointer">
-            <?= $escaper->escapeHtml(__('Use No Neighbour Delivery Service')) ?>
+            <?= $escaper->escapeHtml(__('Enable GoGreen Plus')) ?>
         </span>
     </label>
+    
     <?php if ($magewire->fee > 0): ?>
         <p class="text-sm ml-10 pl-2">
             <?= $escaper->escapeHtml($feenote); ?>

@@ -8,10 +8,12 @@
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
-    <module name="Hyva_HyvaShippingDhl">
+    <module name="Hyva_ShippingDhlDe">
         <sequence>
-            <module name="Hyva_ShippingDhl"/>
+            <module name="Hyva_Checkout"/>
             <module name="Hyva_CompatModuleFallback"/>
+            <module name="Dhl_Paket"/>
+            <module name="Netresearch_ShippingCore"/>
             <module name="Netresearch_ShippingUi"/>
         </sequence>
     </module>
