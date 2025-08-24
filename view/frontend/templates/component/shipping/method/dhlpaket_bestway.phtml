@@ -20,17 +20,16 @@ use Hyva\HyvaShippingDhl\Magewire\DeliveryOptions;
         <?= /* @noEscape */ $block->getChildHtml('dhlpaket_bestway_parcel_announcement'); ?>    
         <?php if ($magewire->isShippingAddressValid()): ?>
             <?= /* @noEscape */ $block->getChildHtml('dhlpaket_bestway_parcel_packstation'); ?>
-        
+
             <?php /*?>Integration of the additional costs still needs to be done.<?php */?>
-            <?= /* @noEscape */ $block->getChildHtml('dhlpaket_bestway_preferred_day'); ?> 
-        
+            <?//= /* @noEscape */ $block->getChildHtml('dhlpaket_bestway_preferred_day'); ?> 
+
             <?= /* @noEscape */ $block->getChildHtml('dhlpaket_preferred_location'); ?>
             <?= /* @noEscape */ $block->getChildHtml('dhlpaket_preferred_neighbor'); ?>
-            
+
             <?php /*?>Integration of the additional costs still needs to be done.<?php */?>
-            <?= /* @noEscape */ $block->getChildHtml('dhlpaket_no_neighbor'); ?>
-            
-            <?= /* @noEscape */ $block->getChildHtml('checkout.shipping-method.gogreen_plus'); ?>
+            <?//= /* @noEscape */ $block->getChildHtml('dhlpaket_no_neighbor'); ?>            
+            <?//= /* @noEscape */ $block->getChildHtml('checkout.shipping-method.gogreen_plus'); ?>
         <?php endif; ?>
     </div>
 </div>
