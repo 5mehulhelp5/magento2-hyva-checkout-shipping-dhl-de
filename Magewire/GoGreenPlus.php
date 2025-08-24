@@ -11,29 +11,40 @@ use Netresearch\ShippingCore\Api\Data\ShippingSettings\ShippingOption\Selection\
 class GoGreenPlus extends ShippingOptions
 {
     /**
+     * Holds the state of the GoGreen Plus checkbox.
+     *
      * @var bool
      */
     public bool $goGreenPlusEnabled = false;
 
     /**
+     * Holds the additional charge for the GoGreen Plus service.
+     *
      * @var float
      */
     public float $fee = 0.0;
 
     /**
+     * Determines if the component's inputs should be disabled.
+     *
      * @var bool
      */
     public bool $disabled = false;
 
     /**
+     * Event listeners for this component.
+     *
      * @var string[]
      */
     protected $listeners = [
-        
+        // Currently, there are no events to listen for.
+        // This structure is ready for future enhancements.
     ];
 
     /**
-     * Lädt den initialen Status der Komponente.
+     * Loads the initial state of the component.
+     *
+     * @return void
      */
     public function mount(): void
     {
@@ -48,7 +59,9 @@ class GoGreenPlus extends ShippingOptions
     }
 
     /**
-     * Kann aufgerufen werden, um den Status an andere Komponenten zu senden.
+     * Can be called to dispatch the component's state to other components.
+     *
+     * @return void
      */
     public function init(): void
     {
@@ -56,29 +69,29 @@ class GoGreenPlus extends ShippingOptions
     }
 
     /**
-     * Sendet den aktuellen Status dieser Komponente als Event.
+     * Emits the current state of this component as an event.
+     *
+     * @return void
      */
     protected function dispatchEmit(): void
     {
-        // Aktuell benötigt keine andere Komponente diese Information.
-        // Die Struktur ist aber für zukünftige Erweiterungen vorbereitet.
+        // Currently, no other component needs this information.
+        // This structure is ready for future enhancements.
         $this->emit('updated_gogreen_plus', [
             'goGreenPlusEnabled' => $this->goGreenPlusEnabled
         ]);
     }
 
     /**
-     * Wird aufgerufen, wenn die Checkbox im Frontend geändert wird.
+     * Called when the checkbox is changed in the frontend.
      *
      * @param bool $value
      * @return mixed
      */
     public function updatedGoGreenPlusEnabled(bool $value): mixed
     {
-        // Sendet den neuen Status an andere (potenzielle) Listener
         $this->dispatchEmit();
         
-        // Speichert den neuen Wert in der Datenbank
         return $this->persistFieldUpdate(
             'enabled',
             $value,
