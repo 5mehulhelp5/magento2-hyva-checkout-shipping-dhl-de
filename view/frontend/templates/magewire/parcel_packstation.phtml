@@ -84,7 +84,8 @@ $tooltip = $viewModels->require(Tooltip::class);
                             <span><?= $escaper->escapeHtml(__('Remove')) ?></span>
                         </button>
                     
-                        <div class="my-3 flex flex-col items-start justify-start field field-reserved">
+                        <div class="field-wrapper field-type-text field field-reserved my-3 flex flex-col items-start justify-start
+                                    <?= !empty($magewire->postnumberError) ? ' field-error' : '' ?>">
                             <div class="inline-flex">
                                 <label class="label font-bold mr-3" 
                                        for="customer-postnumber">
@@ -92,24 +93,28 @@ $tooltip = $viewModels->require(Tooltip::class);
                                 </label> 
                                 <?= $tooltip->render(__('The post number is your personal identification code that you receive with your registration at DHL.')) ?>
                             </div>
-                            <input name="customer-postnumber"
-                                   type="text"
-                                   id="customer-postnumber"
-                                   data-validate='{"minlength":6,"customer-postnumber":true,"magewire":true}'
+                            <input type="text"
+                                   id="dhl-postnumber"
+                                   name="dhl_postnumber"
                                    autocomplete="off"
+                                   type="text"
                                    maxlength="10"
                                    pattern="\d*"
+                                   x-ref="dhl-postnumber"
                                    data-type="<?= $escaper->escapeHtmlAttr($magewire->deliveryLocation['type'] ?? '') ?>"
                                    <?php if (isset($magewire->deliveryLocation['type']) && $magewire->deliveryLocation['type'] === 'locker'): ?>
-                                        required
+                                       required
+                                   <?php endif; ?>
+                                   <?php if (!empty($magewire->postnumberError)): ?>
+                                       aria-invalid="true"
                                    <?php endif; ?>
                                    class="block w-full form-input grow renderer-text"
                                    placeholder="<?= $escaper->escapeHtmlAttr(__('Your personal post number')) ?>" 
                                    aria-describedby="<?= $escaper->escapeHtmlAttr(__('Your personal post number')) ?>"
-                                   title="<?= $escaper->escapeHtmlAttr(__('Please enter more than or equal to 6 characters')) ?>"
+                                   title="<?= $escaper->escapeHtmlAttr(__('Your personal post number')) ?>"
                                    wire:model.lazy="deliveryLocation.customerPostnumber">
                             <?php if (!empty($magewire->postnumberError)): ?>
-                                <p class="message error mt-1" aria-live="polite"><?= $escaper->escapeHtml($magewire->postnumberError) ?></p>
+                                <p class="messages" aria-live="polite"><?= $escaper->escapeHtml($magewire->postnumberError) ?></p>
                             <?php endif; ?>
                         </div>
                         <p class="text-xs mt-3">
