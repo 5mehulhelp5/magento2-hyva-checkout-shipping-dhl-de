@@ -62,46 +62,14 @@ class ParcelPackstation extends ShippingOptions implements EvaluationInterface
      * @param EvaluationResultFactory $resultFactory
      * @return EvaluationResultInterface
      */
-    public function evaluateCompletion(EvaluationResultFactory $resultFactory): EvaluationResultInterface {
+    public function evaluateCompletion(EvaluationResultFactory $resultFactory): EvaluationResultInterface
+    {
         if (empty($this->deliveryLocation['enabled']) || empty($this->deliveryLocation['id'])) {
             return $resultFactory->createSuccess();
         }
 
-        $type  = (string)($this->deliveryLocation['type'] ?? '');
-        $value = (string)($this->deliveryLocation['customerPostnumber'] ?? '');
-        $error = $this->validatePostnumber($value, $type);
-
-        if ($error !== null) {
-            $this->postnumberError = $error;
-
-            return $resultFactory->createErrorMessage()
-                ->withMessage($error)
-                ->withVisibilityDuration(3000);
-        }
-
-        $this->postnumberError = '';
-        return $resultFactory->createSuccess();
+        return $resultFactory->createValidation('validateDhlPostnumber');
     }
-
-    private function validatePostnumber(?string $raw, string $type): ?string
-    {
-        $postnumber = preg_replace('/\D+/', '', (string)$raw);
-        $isLocker   = (strtolower($type) === 'locker');
-
-        $isValid = $postnumber !== '' && preg_match('/^\d{6,10}$/', $postnumber);
-
-        if ($isLocker) {
-            return $isValid ? null : (string)__('The DHL postcode provided is not valid.');
-        }
-
-        if ($postnumber === '') {
-            return null;
-        }
-        return preg_match('/^\d{6,10}$/', $postnumber)
-            ? null
-            : (string)__('The DHL postcode provided is not valid.');
-    }
-
 
     /**
      * Initializes the component and loads the quote selections from the database.
@@ -164,29 +132,28 @@ class ParcelPackstation extends ShippingOptions implements EvaluationInterface
      */
     public function updatedDeliveryLocationCustomerPostnumber(string $value): void
     {
-        $type  = (string)($this->deliveryLocation['type'] ?? '');
-        $error = $this->validatePostnumber($value, $type);
+        $type     = (string)($this->deliveryLocation['type'] ?? '');
+        $isLocker = (strtolower($type) === 'locker');
 
-        // Diese if/else-Logik setzt die postnumberError-Nachricht
-        if ($error !== null) {
-            $this->postnumberError = (string)__('Die nummer ist nicht gültig sollte zwischen 6 und 10 zeichen haben');
+        $account  = mb_substr(trim($value), 0, 10);
+        $len      = mb_strlen($account);
+        $isValid  = ($len >= 6 && $len <= 10) && (bool)preg_match('/^[A-Za-z0-9]{6,10}$/u', $account);
+
+        if ($isLocker && $account === '') {
+            $this->postnumberError = (string)__('DHL post number is required for lockers.');
+        } elseif ($account !== '' && !$isValid) {
+            $this->postnumberError = (string)__('Please enter a valid DHL post number (6–10 alphanumeric characters).');
         } else {
             $this->postnumberError = '';
         }
 
-        // immer nur Ziffern speichern (max. 10)
-        $digits = substr(preg_replace('/\D+/', '', $value), 0, 10);
-
         $this->persistFieldUpdate(
             DhlCodes::SERVICE_INPUT_DELIVERY_LOCATION_ACCOUNT_NUMBER,
-            $digits,
+            $account,
             Codes::SERVICE_OPTION_DELIVERY_LOCATION
         );
-
-        // Spiegel auch in State halten (damit UI nach Persist direkt konsistent ist)
-        $this->deliveryLocation['customerPostnumber'] = $digits;
+        $this->deliveryLocation['customerPostnumber'] = $account;
     }
-
 
     /**
      * Clears the packstation data and updates the selections in the database.
