@@ -394,7 +394,7 @@ $heroicons = $viewModels->require(HeroiconsOutline::class);
             const val   = raw.slice(0, 10);
             const isValid = /^[A-Za-z0-9]{6,10}$/.test(val);
 
-            if ((!isValid && val !== '') || (isLocker && val === '')) {
+            if ((isLocker && val === '') || (val !== '' && !isValid) ) {
                 if (window.Livewire) {
                     window.Livewire.emit('dhlPostnumberUpdated', val);
                 }
@@ -408,6 +408,5 @@ $heroicons = $viewModels->require(HeroiconsOutline::class);
             return true;
         });
     });
-
 </script>
 <?php $hyvaCsp->registerInlineScript() ?>
