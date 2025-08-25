@@ -53,6 +53,7 @@ class ParcelPackstation extends ShippingOptions implements EvaluationInterface
         'guest_shipping_address_saved' => 'checkAndSetShippingAddress',
         'parcel_packstation_saved' => 'setPackstation',
         'parcel_packstation_removed' => 'clearPackstation',
+        'dhlPostnumberUpdated' => 'updatedDeliveryLocationCustomerPostnumber',
     ];
 
     /**
