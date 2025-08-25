@@ -361,7 +361,7 @@ $heroicons = $viewModels->require(HeroiconsOutline::class);
         Alpine.data('mapdata', mapdata);                          
     }, { once: true });
 
-    (() => {
+<?php /*?>    (() => {
         if (hyva && hyva.formValidation) {
             hyva.formValidation.addRule('postnummer-alnum-6-10', (value) => {
                 const v = String(value || '').trim();
@@ -381,7 +381,7 @@ $heroicons = $viewModels->require(HeroiconsOutline::class);
                     : '<?= $escaper->escapeJs(__('This is a required field.')) ?>';
             });
         }
-    })();
+    })();<?php */?>
                 
     window.addEventListener('checkout:init:evaluation', event => {
         hyvaCheckout.evaluation.registerValidator('validateDhlPostnumber', (element, component) => {
@@ -395,6 +395,9 @@ $heroicons = $viewModels->require(HeroiconsOutline::class);
             const isValid = /^[A-Za-z0-9]{6,10}$/.test(val);
 
             if ((!isValid && val !== '') || (isLocker && val === '')) {
+                if (window.Livewire) {
+                    window.Livewire.emit('dhlPostnumberUpdated', val);
+                }
                 hyvaCheckout.messenger.dispatch(
                     'shipping:method',
                     '<?= $escaper->escapeJs(__('Unable to save shipping information. Please check input data.')) ?>',
