@@ -352,8 +352,59 @@ $heroicons = $viewModels->require(HeroiconsOutline::class);
             }
         }
     };
+    function validateDhlPostnumber() {
+        return {
+            
+        }
+    };
     window.addEventListener('alpine:init', () => {
-        Alpine.data('mapdata', mapdata);                        
-    }, { once: true });         
+        Alpine.data('mapdata', mapdata);                          
+    }, { once: true });
+
+    (() => {
+        if (hyva && hyva.formValidation) {
+            hyva.formValidation.addRule('postnummer-alnum-6-10', (value) => {
+                const v = String(value || '').trim();
+                if (v === '') return true;
+                return /^[A-Za-z0-9]{6,10}$/.test(v)
+                    ? true
+                    : '<?= $escaper->escapeJs(__('Please enter a valid DHL post number (6–10 alphanumeric characters).')) ?>';
+            });
+
+            hyva.formValidation.addRule('required-if-locker', (value) => {
+                const type =
+                    document.querySelector('[name="delivery_location_type"]')?.value
+                    ?? window?.hyvaCheckout?.evaluation?.component?.data?.deliveryLocation?.type
+                    ?? '';
+                return String(type).toLowerCase() !== 'locker' || String(value || '').trim() !== ''
+                    ? true
+                    : '<?= $escaper->escapeJs(__('This is a required field.')) ?>';
+            });
+        }
+    })();
+                
+    window.addEventListener('checkout:init:evaluation', event => {
+        hyvaCheckout.evaluation.registerValidator('validateDhlPostnumber', (element, component) => {
+            const dl = component?.data?.deliveryLocation || {};
+            const type = String(dl.type || '').toLowerCase();
+            const isLocker = type === 'locker';
+
+            const input = document.querySelector('[name="dhl_postnumber"], #dhl-postnumber');
+            const raw   = (input?.value ?? dl.customerPostnumber ?? '').toString().trim();
+            const val   = raw.slice(0, 10);
+            const isValid = /^[A-Za-z0-9]{6,10}$/.test(val);
+
+            if ((!isValid && val !== '') || (isLocker && val === '')) {
+                hyvaCheckout.messenger.dispatch(
+                    'shipping:method',
+                    '<?= $escaper->escapeJs(__('Unable to save shipping information. Please check input data.')) ?>',
+                    'warning'
+                );
+                return false;
+            }
+            return true;
+        });
+    });
+
 </script>
 <?php $hyvaCsp->registerInlineScript() ?>
