@@ -143,7 +143,7 @@ class ParcelPackstation extends ShippingOptions implements EvaluationInterface
         if ($isLocker && $account === '') {
             $this->postnumberError = (string)__('DHL post number is required for lockers.');
         } elseif ($account !== '' && !$isValid) {
-            $this->postnumberError = (string)__('Please enter a valid DHL post number (6–10 alphanumeric characters).');
+            $this->postnumberError = (string)__('Please enter a valid DHL post number (6–10 characters).');
         } else {
             $this->postnumberError = '';
         }
