@@ -75,8 +75,6 @@ class GoGreenPlus extends ShippingOptions
      */
     protected function dispatchEmit(): void
     {
-        // Currently, no other component needs this information.
-        // This structure is ready for future enhancements.
         $this->emit('updated_gogreen_plus', [
             'goGreenPlusEnabled' => $this->goGreenPlusEnabled
         ]);
@@ -91,11 +89,15 @@ class GoGreenPlus extends ShippingOptions
     public function updatedGoGreenPlusEnabled(bool $value): mixed
     {
         $this->dispatchEmit();
-        
-        return $this->persistFieldUpdate(
+
+        $result = $this->persistFieldUpdate(
             'enabled',
             $value,
             Codes::SERVICE_OPTION_GOGREEN_PLUS
         );
+
+        $this->emit('shipping_address_saved');
+
+        return $result;
     }
 }
