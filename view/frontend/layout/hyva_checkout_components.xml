@@ -124,7 +124,7 @@
         <referenceBlock name="price-summary.total-segments">
             <block name="price-summary.total-segments.nrshipping_additional_fee"
                    as="nrshipping_additional_fee"
-                   template="Hyva_ShippingDhlDe::checkout/price-summary/total-segments/nrshipping_additional_fee.phtml">/>
+                   template="Hyva_ShippingDhlDe::checkout/price-summary/total-segments/nrshipping_additional_fee.phtml"/>
         </referenceBlock>
     </body>
 </page>
