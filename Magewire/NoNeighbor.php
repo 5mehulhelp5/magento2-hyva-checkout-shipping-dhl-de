@@ -82,11 +82,14 @@ class NoNeighbor extends ShippingOptions
     {
         $this->dispatchEmit();
         
-        // KORREKTUR: Aufräumen von redundantem Code
-        return $this->persistFieldUpdate(
+        $result = $this->persistFieldUpdate(
             'enabled',
             $value,
             Codes::SERVICE_OPTION_NO_NEIGHBOR_DELIVERY
         );
+
+        $this->emit('shipping_address_saved');
+
+        return $result;
     }
 }
