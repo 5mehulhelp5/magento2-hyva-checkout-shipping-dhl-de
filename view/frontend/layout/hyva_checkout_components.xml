@@ -2,9 +2,9 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <update handle="hyva_modal"/>
+    <update handle="hyva_form_validation"/>
     <body>
         <referenceContainer name="magewire.plugin.scripts">
-            <!-- add the script -->
             <block name="checkout.shipping.method.dhlpaket_bestway_packstation_js"
                    template="Hyva_ShippingDhlDe::magewire/parcel_packstation_modal_js.phtml"
             />
@@ -33,7 +33,7 @@
                 <!-- PARCEL ANNOUNCEMENT -->
                 <block name="checkout.shipping.method.dhlpaket_bestway_pickup"
                        as="dhlpaket_bestway_parcel_announcement"
-                       ifconfig="dhlshippingsolutions/dhlpaket/additional_services/parcelannouncement"
+                       ifconfig="carriers/dhlpaket/service_parcelannouncement_enabled"
                        template="Hyva_ShippingDhlDe::magewire/parcel_announcement.phtml">
                     <arguments>
                         <argument name="magewire" xsi:type="object">
@@ -108,6 +108,8 @@
                 
                 <!--GoGreenPlus-->
                 <block name="checkout.shipping-method.gogreen_plus"
+                       as="dhlpaket_gogreen_plus"
+                       ifconfig="dhlshippingsolutions/dhlpaket/additional_services/gogreen_plus"
                        template="Hyva_ShippingDhlDe::magewire/gogreen_plus.phtml">
                     <arguments>
                         <argument name="magewire" xsi:type="object">
@@ -115,6 +117,18 @@
                         </argument>
                     </arguments>
                 </block>
+            </block>
+        </referenceBlock>
+        
+        <!-- Summary: Adding shipping total costs. -->
+        <referenceBlock name="price-summary.total-segments">
+            <block name="price-summary.total-segments.nrshipping_additional_fee"
+                   as="nrshipping_additional_fee"
+                   template="Hyva_ShippingDhlDe::checkout/price-summary/total-segments/nrshipping_additional_fee.phtml">
+                <block name="total-segments.tax.tax_nrshipping_additional_fee_tax_details"
+                       as="tax_details"
+                       template="Hyva_ShippingDhlDe::checkout/price-summary/total-segments/extension-attributes/nrshipping_additional_fee-details.phtml"
+                />
             </block>
         </referenceBlock>
     </body>
