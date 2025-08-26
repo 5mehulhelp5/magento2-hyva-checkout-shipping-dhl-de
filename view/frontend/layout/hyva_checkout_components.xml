@@ -120,16 +120,11 @@
             </block>
         </referenceBlock>
         
-        <!-- Summary: Adding shipping total costs. -->
+        <!-- Summary: Adding shipping addtional fee. -->
         <referenceBlock name="price-summary.total-segments">
             <block name="price-summary.total-segments.nrshipping_additional_fee"
                    as="nrshipping_additional_fee"
-                   template="Hyva_ShippingDhlDe::checkout/price-summary/total-segments/nrshipping_additional_fee.phtml">
-                <block name="total-segments.tax.tax_nrshipping_additional_fee_tax_details"
-                       as="tax_details"
-                       template="Hyva_ShippingDhlDe::checkout/price-summary/total-segments/extension-attributes/nrshipping_additional_fee-details.phtml"
-                />
-            </block>
+                   template="Hyva_ShippingDhlDe::checkout/price-summary/total-segments/nrshipping_additional_fee.phtml">/>
         </referenceBlock>
     </body>
 </page>
