@@ -1,0 +1,59 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2022-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+use Hyva\Checkout\ViewModel\Checkout\Formatter as FormatterViewModel;
+use Hyva\Theme\Model\ViewModelRegistry;
+use Magento\Tax\Model\Config as TaxConfig;
+
+/** @var Template $block */
+/** @var FormatterViewModel $formatterViewModel */
+/** @var ViewModelRegistry $viewModels */
+/** @var Escaper $escaper */
+/** @var TaxConfig $taxConfig */
+
+$formatterViewModel = $viewModels->require(FormatterViewModel::class);
+$segment = $block->getSegment();
+$segmentTitle = $segment['title'];
+$displayTitle = !empty($segmentTitle) ? $segmentTitle : (string) __('DHL Shipping Service Adjustment');
+$label = $displayTitle;
+$taxConfig = $block->getTaxConfig();
+
+$feeExcl = null;
+if (
+    isset($segment['extension_attributes'])
+    && is_object($segment['extension_attributes'])
+    && method_exists($segment['extension_attributes'], 'getNrshippingFee')
+) {
+    $feeExcl = $segment['extension_attributes']->getNrshippingFee();
+}
+?>
+<div class="flex gap-4 justify-between text-slate-800 text-base md:gap-0">
+    <span class="label">
+        <?= $escaper->escapeHtml($displayTitle) ?>
+    </span>
+    <span class="value">
+        <?= /* @noEscape */ $formatterViewModel->currencyWithLabelingConditions($segment['value'] ?? 0, 'nrshipping_fee_incl_tax') ?>
+    </span>
+</div>
+
+<?php if ($taxConfig->displayCartShippingBoth()): ?>
+    <ul role="list">
+        <li class="flex gap-4 justify-between md:gap-0">
+            <span class="tax-label">
+                <?= $escaper->escapeHtml(__('%1 Excl. Tax', $label)) ?>
+            </span>
+            <span class="tax-unit">
+                <?= $formatterViewModel->currencyWithLabelingConditions($feeExcl, 'nrshipping_fee') ?>
+            </span>
+        </li>
+    </ul>
+<?php endif; ?>
