@@ -35,6 +35,22 @@ class PreferredDay extends ShippingOptions
     }
 
     /**
+     * @return void
+     */
+    public function init(): void
+    {
+        $this->dispatchEmit();
+    }
+
+    /**
+     * @return void
+     */
+    protected function dispatchEmit(): void
+    {
+        
+    }
+    
+    /**
      * Updates the preferred day for delivery.
      *
      * @param ?string $value
@@ -42,10 +58,16 @@ class PreferredDay extends ShippingOptions
      */
     public function updatedPreferredDay(?string $value): mixed
     {
-        return $this->persistFieldUpdate(
-            'date',
+        $this->dispatchEmit();
+
+        $result = $this->persistFieldUpdate(
+            'enabled',
             $value,
             Codes::SERVICE_OPTION_PREFERRED_DAY
         );
+
+        $this->emit('shipping_address_saved');
+
+        return $result;
     }
 }
