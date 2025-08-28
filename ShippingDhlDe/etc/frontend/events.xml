@@ -1,6 +1,0 @@
-<?xml version="1.0"?>
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
-    <!--event name="magewire_dhlpaket_bestway_show_delivery">
-        <observer name="dhlpaket_bestway_show_delivery" instance="Hyva\ShippingDhlDe\Observer\UpdatePickupAndDeliveryButtons"/>
-    </event-->
-</config>
