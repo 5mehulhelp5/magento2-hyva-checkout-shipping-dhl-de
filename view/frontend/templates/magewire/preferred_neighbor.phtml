@@ -20,9 +20,7 @@ $tooltip = $viewModels->require(Tooltip::class);
         </h4>
         <?= /* @noEscape */ $tooltip->render(__('Declare a person in your immediate neighborhood whom we can hand out your parcel. This person should live in the same building, directly opposite or next door.')) ?>
     </div>
-    <div class="ml-4 mr-10 flex flex-col gap-y-4 mt-2"
-         <?php /*?>wire:init="init"
-         x-data="{ disabled: $wire.entangle('disabled') }"<?php */?>>
+    <div class="ml-4 mr-10 flex flex-col gap-y-4 mt-2">
         <div>
             <label for="preferred_neighbor_name">
                 <span>
@@ -33,9 +31,7 @@ $tooltip = $viewModels->require(Tooltip::class);
                    type="text"
                    id="preferred_neighbor_name"
                    class="block w-full form-input grow renderer-text"
-                   <?php /*?>:class="disabled ? 'disabled:opacity-50' : ''"<?php */?>
                    placeholder="<?= $escaper->escapeHtmlAttr(__('First name, last name of neighbor'))?>"
-                   <?php /*?>x-bind:disabled="disabled"<?php */?>
                    />
         </div>
         <div>
@@ -47,10 +43,8 @@ $tooltip = $viewModels->require(Tooltip::class);
             <input wire:model.lazy="preferredNeighborAddress"
                    id="preferred_neighbor_address"
                    class="block w-full form-input grow renderer-text"
-                   <?php /*?>:class="disabled ? 'disabled:opacity-50' : ''"<?php */?>
                    type="text"
                    placeholder="<?= $escaper->escapeHtmlAttr(__('Street, number, postal code, city'))?>"
-                   <?php /*?>x-bind:disabled="disabled"<?php */?>
                    />
         </div>
     </div>

@@ -31,20 +31,16 @@ $feenote = str_replace('$1', $formatterViewModel->currency($magewire->fee), $fee
     <label class="inline-flex items-center gap-x-4 ml-4" 
            for="noNeighbor">
         <input wire:model="noNeighbor"
-               <?php /*?>x-data="{ disabled: $wire.entangle('disabled') }"<?php */?>
                type="checkbox"
                id="noNeighbor"
                class="field checkbox w-4 h-4 renderer-checkbox"
-               <?php /*?>:class="disabled ? 'disabled:opacity-50' : ''"
-               x-bind:disabled="disabled"
-               wire:click="$emitTo('checkout.shipping.method.dhlpaket_bestway_preferred_neighbor', 'refresh')"<?php */?>
         />
         <span class="text-gray-700 hover:cursor-pointer">
             <?= $escaper->escapeHtml(__('Use No Neighbour Delivery Service')) ?>
         </span>
     </label>
     <?php if ($magewire->fee > 0): ?>
-        <p class="text-sm ml-10 pl-2">
+        <p class="text-sm">
             <?= $escaper->escapeHtml($feenote); ?>
         </p>
     <?php endif; ?>

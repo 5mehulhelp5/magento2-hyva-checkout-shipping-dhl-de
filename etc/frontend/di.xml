@@ -10,15 +10,4 @@
             </argument>
         </arguments>
     </type>
-    <!--todo-->
-    <!--<type name="Netresearch\ShippingCore\Model\AdditionalFee\AdditionalFeeManagement">
-        <arguments>
-            <argument name="additionalFeeProviders" xsi:type="array">
-                <item name="dhl_no_neighbor_fee" xsi:type="object">Hyva\ShippingDhlDe\Model\AdditionalFee\NoNeighborFee</item>
-                <item name="dhl_preferred_day_fee" xsi:type="object">Hyva\ShippingDhlDe\Model\AdditionalFee\PreferredDayFee</item>
-                <item name="dhl_closest_drop_point_fee" xsi:type="object">Hyva\ShippingDhlDe\Model\AdditionalFee\ClosestDropPointFee</item>
-                <item name="dhl_gogreen_plus_fee" xsi:type="object">Hyva\ShippingDhlDe\Model\AdditionalFee\GoGreenPlusFee</item>
-            </argument>
-        </arguments>
-    </type>-->
 </config>

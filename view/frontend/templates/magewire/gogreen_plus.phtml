@@ -41,7 +41,7 @@ $feenote = str_replace('$1', $formatterViewModel->currency($magewire->fee), $fee
     </label>
     
     <?php if ($magewire->fee > 0): ?>
-        <p class="text-sm ml-10 pl-2">
+        <p class="text-sm">
             <?= $escaper->escapeHtml($feenote); ?>
         </p>
     <?php endif; ?>
