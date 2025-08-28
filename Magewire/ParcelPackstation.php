@@ -82,6 +82,7 @@ class ParcelPackstation extends ShippingOptions implements EvaluationInterface
 
         if (!empty($this->deliveryLocation['id'])) {
             $this->deliveryLocation['enabled'] = true;
+            $this->validatePostnumber();
         }
     }
 
@@ -151,7 +152,9 @@ class ParcelPackstation extends ShippingOptions implements EvaluationInterface
         }
         $this->deliveryLocation['enabled'] = true;
         $this->persistFieldUpdate('enabled', '1', Codes::SERVICE_OPTION_DELIVERY_LOCATION);
-
+        
+        $this->validatePostnumber();
+        
         // Notify parent that Packstation is now active (with current array)
         $this->emitUp('exclusiveServiceUpdated', 'parcelPackstation', true, [
             'deliveryLocation' => $this->deliveryLocation,
@@ -166,11 +169,41 @@ class ParcelPackstation extends ShippingOptions implements EvaluationInterface
      */
     public function updatedDeliveryLocationCustomerPostnumber(string $value): void
     {
-        $type     = (string)($this->deliveryLocation['type'] ?? '');
+        $this->deliveryLocation['customerPostnumber'] = $value;
+        $this->validatePostnumber();
+
+        $this->persistFieldUpdate(
+            DhlCodes::SERVICE_INPUT_DELIVERY_LOCATION_ACCOUNT_NUMBER,
+            $this->deliveryLocation['customerPostnumber'],
+            Codes::SERVICE_OPTION_DELIVERY_LOCATION
+        );
+
+        $this->emitUp('exclusiveServiceUpdated', 'parcelPackstation', true);
+    }
+    
+    /**
+     * Validates the DHL customer postnumber for Packstation/locker delivery.
+     *
+     * Sets a validation error message if the postnumber is missing or invalid.
+     *
+     * @return void
+     */
+    private function validatePostnumber(): void
+    {
+        /** @var string $type The delivery location type (e.g. 'locker'). */
+        $type = (string)($this->deliveryLocation['type'] ?? '');
+
+        /** @var bool $isLocker True if the delivery type is a DHL locker. */
         $isLocker = (strtolower($type) === 'locker');
-        $account  = mb_substr(trim($value), 0, 10);
-        $len      = mb_strlen($account);
-        $isValid  = ($len >= 6 && $len <= 10) && (bool)preg_match('/^[A-Za-z0-9]{6,10}$/u', $account);
+
+        /** @var string $account The trimmed DHL customer postnumber (max 10 chars). */
+        $account = mb_substr(trim($this->deliveryLocation['customerPostnumber']), 0, 10);
+
+        /** @var int $len The length of the account string. */
+        $len = mb_strlen($account);
+
+        /** @var bool $isValid True if the postnumber matches 6–10 alphanumeric chars. */
+        $isValid = ($len >= 6 && $len <= 10) && (bool)preg_match('/^[A-Za-z0-9]{6,10}$/u', $account);
 
         if ($isLocker && $account === '') {
             $this->postnumberError = (string)__('DHL post number is required for lockers.');
@@ -179,17 +212,6 @@ class ParcelPackstation extends ShippingOptions implements EvaluationInterface
         } else {
             $this->postnumberError = '';
         }
-        $this->persistFieldUpdate(
-            DhlCodes::SERVICE_INPUT_DELIVERY_LOCATION_ACCOUNT_NUMBER,
-            $account,
-            Codes::SERVICE_OPTION_DELIVERY_LOCATION
-        );
-        $this->deliveryLocation['customerPostnumber'] = $account;
-
-        // Notify parent of the state change!
-        $this->emitUp('exclusiveServiceUpdated', 'parcelPackstation', true, [
-            'deliveryLocation' => $this->deliveryLocation,
-        ]);
     }
 
     /**
