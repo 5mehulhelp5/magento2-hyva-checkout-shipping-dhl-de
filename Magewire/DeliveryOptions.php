@@ -35,12 +35,12 @@ class DeliveryOptions extends ShippingOptions
     /**
      * @var string|null Neighbor's name for neighbor delivery.
      */
-    public ?string $neighborName = null;
+    public ?string $preferredNeighborName = null;
 
     /**
      * @var string|null Neighbor's address for neighbor delivery.
      */
-    public ?string $neighborAddress = null;
+    public ?string $preferredNeighborAddress = null;
 
     /**
      * @var string|null Preferred day for delivery.
