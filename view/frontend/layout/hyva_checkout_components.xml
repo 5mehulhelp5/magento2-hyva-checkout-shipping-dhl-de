@@ -33,7 +33,7 @@
                 <!-- PARCEL ANNOUNCEMENT -->
                 <block name="checkout.shipping.method.dhlpaket_bestway_pickup"
                        as="dhlpaket_bestway_parcel_announcement"
-                       ifconfig="carriers/dhlpaket/service_parcelannouncement_enabled"
+                       ifconfig="dhlshippingsolutions/dhlpaket/additional_services/parcelannouncement"
                        template="Hyva_ShippingDhlDe::magewire/parcel_announcement.phtml">
                     <arguments>
                         <argument name="magewire" xsi:type="object">

@@ -32,16 +32,6 @@ class GoGreenPlus extends ShippingOptions
     public bool $disabled = false;
 
     /**
-     * Event listeners for this component.
-     *
-     * @var string[]
-     */
-    protected $listeners = [
-        // Currently, there are no events to listen for.
-        // This structure is ready for future enhancements.
-    ];
-
-    /**
      * Loads the initial state of the component.
      *
      * @return void
@@ -59,28 +49,6 @@ class GoGreenPlus extends ShippingOptions
     }
 
     /**
-     * Can be called to dispatch the component's state to other components.
-     *
-     * @return void
-     */
-    public function init(): void
-    {
-        $this->dispatchEmit();
-    }
-
-    /**
-     * Emits the current state of this component as an event.
-     *
-     * @return void
-     */
-    protected function dispatchEmit(): void
-    {
-        $this->emit('updated_gogreen_plus', [
-            'goGreenPlusEnabled' => $this->goGreenPlusEnabled
-        ]);
-    }
-
-    /**
      * Called when the checkbox is changed in the frontend.
      *
      * @param bool $value
@@ -88,16 +56,9 @@ class GoGreenPlus extends ShippingOptions
      */
     public function updatedGoGreenPlusEnabled(bool $value): mixed
     {
-        $this->dispatchEmit();
-
-        $result = $this->persistFieldUpdate(
-            'enabled',
-            $value,
-            Codes::SERVICE_OPTION_GOGREEN_PLUS
-        );
-
-        $this->emit('shipping_address_saved');
-
-        return $result;
+        $this->emitUp('childStateUpdated', 'goGreenPlus', $value); // <-- Hochgeben!
+        $this->emitToRefresh('price-summary.total-segments');
+        return $this->persistFieldUpdate('enabled', $value, Codes::SERVICE_OPTION_GOGREEN_PLUS);
     }
+
 }

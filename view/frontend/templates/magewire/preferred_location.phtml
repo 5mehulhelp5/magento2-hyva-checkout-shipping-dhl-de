@@ -22,14 +22,14 @@ $tooltip = $viewModels->require(Tooltip::class);
     </div>
     <div class="ml-4 mr-10">
         <input wire:model.lazy="preferredLocation"
-               wire:init="init"
-               x-data="{ disabled: $wire.entangle('disabled') }"
+              <?php /*?> wire:init="init"
+               x-data="{ disabled: $wire.entangle('disabled') }"<?php */?>
                type="text"
                id="preferred_location"
                class="block w-full form-input grow renderer-text"
-               :class="disabled ? 'disabled:opacity-50' : ''"
+               <?php /*?>:class="disabled ? 'disabled:opacity-50' : ''"<?php */?>
                placeholder="<?= $escaper->escapeHtmlAttr(__('E.g. garage, terrace'))?>"
-               x-bind:disabled="disabled"
+               <?php /*?>x-bind:disabled="disabled"<?php */?>
                />
     </div>
 </div>   

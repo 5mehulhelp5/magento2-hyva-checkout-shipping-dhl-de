@@ -4,129 +4,102 @@ declare(strict_types=1);
 
 namespace Hyva\ShippingDhlDe\Magewire;
 
-use Dhl\Paket\Model\Config\ModuleConfig;
 use Dhl\Paket\Model\ShippingSettings\ShippingOption\Codes;
 use Netresearch\ShippingCore\Api\Data\ShippingSettings\ShippingOption\Selection\SelectionInterface;
 
+/**
+ * Magewire component for DHL Preferred Neighbor option.
+ */
 class PreferredNeighbor extends ShippingOptions
 {
     /**
-     * @var string
+     * @var string Name of the preferred neighbor.
      */
     public string $preferredNeighborName = '';
 
     /**
-     * @var string
+     * @var string Address of the preferred neighbor.
      */
     public string $preferredNeighborAddress = '';
 
     /**
-     * @var bool
+     * @var bool If true, disables the component inputs.
      */
     public bool $disabled = false;
 
     /**
-     * @var string[]
+     * @var array Listens for reset events from the parent component.
      */
     protected $listeners = [
-        'updated_preferred_location' => 'listenPreferredLocation',
-        'updated_no_neighbor' => 'listenNoNeighbor',
+        'resetYourself' => 'resetFields',
     ];
 
     /**
-     * Initializes the component by loading existing preferred neighbor details from the database.
+     * Loads initial values from the quote on mount.
+     *
+     * @return void
      */
     public function mount(): void
     {
-        /** @var $quoteSelection SelectionInterface */
+        /** @var SelectionInterface[] $quoteSelections */
         $quoteSelections = $this->loadFromDb(Codes::SERVICE_OPTION_NEIGHBOR_DELIVERY);
 
         if ($quoteSelections) {
             if (isset($quoteSelections['name'])) {
-                $this->preferredNeighborName = $quoteSelections['name']->getInputValue();
+                $this->preferredNeighborName = (string) $quoteSelections['name']->getInputValue();
             }
-
             if (isset($quoteSelections['address'])) {
-                $this->preferredNeighborAddress = $quoteSelections['address']->getInputValue();
+                $this->preferredNeighborAddress = (string) $quoteSelections['address']->getInputValue();
             }
         }
     }
 
     /**
-     * Dispatches an event to notify other components about the current preferred neighbor details.
+     * Resets all neighbor fields and persists the empty state.
      *
      * @return void
      */
-    protected function dispatchEmit(): void
+    public function resetFields(): void
     {
-        $this->emit('updated_preferred_neighbor', [
-            'preferredNeighborName' => $this->preferredNeighborName,
-            'preferredNeighborAddress' => $this->preferredNeighborAddress
-        ]);
+        $this->preferredNeighborName = '';
+        $this->preferredNeighborAddress = '';
+        $this->persistFieldUpdate('name', '', Codes::SERVICE_OPTION_NEIGHBOR_DELIVERY);
+        $this->persistFieldUpdate('address', '', Codes::SERVICE_OPTION_NEIGHBOR_DELIVERY);
     }
 
     /**
-     * Initializes the component's state and dispatches the initial preferred neighbor details.
-     * This method is called after mount, for client-side hydration.
-     *
-     * @return void
-     */
-    public function init(): void
-    {
-        $this->dispatchEmit();
-    }
-
-    /**
-     * @param array $value
-     * @return void
-     */
-    public function listenPreferredLocation(array $value): void
-    {
-        $this->disabled = !empty($value['preferredLocation']);
-    }
-
-    /**
-     * @param array $value
-     * @return void
-     */
-    public function listenNoNeighbor(array $value): void
-    {
-        $this->disabled = $value['noNeighbor'];
-    }
-
-    /**
-     * Updates the preferred neighbor's name.
+     * Called when the neighbor name is updated.
      *
      * @param string $value
-     * @return string // Changed from mixed to string for more precision
+     * @return string
      */
     public function updatedPreferredNeighborName(string $value): string
     {
-        // Emit the event
-        $this->dispatchEmit();
-
-        return $this->persistFieldUpdate(
-            'name',
-            $value,
-            Codes::SERVICE_OPTION_NEIGHBOR_DELIVERY
-        );
+        $isActive = !empty($value) || !empty($this->preferredNeighborAddress);
+        // Inform the parent that this exclusive service has changed.
+        $this->emitUp('exclusiveServiceUpdated', 'preferredNeighbor', $isActive, [
+            'name'    => $value,
+            'address' => $this->preferredNeighborAddress,
+        ]);
+        // Persist the new value.
+        return $this->persistFieldUpdate('name', $value, Codes::SERVICE_OPTION_NEIGHBOR_DELIVERY);
     }
 
     /**
-     * Updates the preferred neighbor's address.
+     * Called when the neighbor address is updated.
      *
      * @param string $value
-     * @return string // Changed from mixed to string for more precision
+     * @return string
      */
     public function updatedPreferredNeighborAddress(string $value): string
     {
-        // Emit the event
-        $this->dispatchEmit();
-
-        return $this->persistFieldUpdate(
-            'address',
-            $value,
-            Codes::SERVICE_OPTION_NEIGHBOR_DELIVERY
-        );
+        $isActive = !empty($this->preferredNeighborName) || !empty($value);
+        // Inform the parent that this exclusive service has changed.
+        $this->emitUp('exclusiveServiceUpdated', 'preferredNeighbor', $isActive, [
+            'name'    => $this->preferredNeighborName,
+            'address' => $value,
+        ]);
+        // Persist the new value.
+        return $this->persistFieldUpdate('address', $value, Codes::SERVICE_OPTION_NEIGHBOR_DELIVERY);
     }
 }

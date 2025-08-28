@@ -4,93 +4,77 @@ declare(strict_types=1);
 
 namespace Hyva\ShippingDhlDe\Magewire;
 
-use Dhl\Paket\Model\Config\ModuleConfig;
 use Dhl\Paket\Model\ShippingSettings\ShippingOption\Codes;
 use Netresearch\ShippingCore\Api\Data\ShippingSettings\ShippingOption\Selection\SelectionInterface;
 
+/**
+ * Magewire component for DHL Preferred Location (drop-off delivery).
+ */
 class PreferredLocation extends ShippingOptions
 {
     /**
-     * @var string
+     * @var string The preferred drop-off location.
      */
     public string $preferredLocation = '';
 
     /**
-     * @var bool
+     * @var bool If true, disables the input.
      */
     public bool $disabled = false;
 
     /**
-     * @var string[]
+     * @var array Event listeners for this component.
      */
     protected $listeners = [
-        'updated_preferred_neighbor' => 'listenPreferredNeighbor'
+        'resetYourself' => 'clearValue'
     ];
 
     /**
-     * Initializes the component by loading existing preferred drop-off location selection from the database.
+     * Loads the initial value from the quote on mount.
+     *
+     * @return void
      */
     public function mount(): void
     {
-        /** @var $quoteSelection SelectionInterface */
+        /** @var SelectionInterface[] $quoteSelections */
         $quoteSelections = $this->loadFromDb(Codes::SERVICE_OPTION_DROPOFF_DELIVERY);
 
-        if ($quoteSelections) {
-            if (isset($quoteSelections['details'])) {
-                $this->preferredLocation = $quoteSelections['details']->getInputValue();
-            }
+        if ($quoteSelections && isset($quoteSelections['details'])) {
+            $this->preferredLocation = (string) $quoteSelections['details']->getInputValue();
         }
     }
 
     /**
-     * Dispatches an event to notify other components about the current preferred location state.
+     * Clears the value and persists an empty state.
      *
      * @return void
      */
-    protected function dispatchEmit(): void
+    public function clearValue(): void
     {
-        $this->emit('updated_preferred_location', ['preferredLocation' => $this->preferredLocation]);
+        $this->preferredLocation = '';
+        $this->persistFieldUpdate('details', '', Codes::SERVICE_OPTION_DROPOFF_DELIVERY);
     }
 
     /**
-     * Initializes the component's state and dispatches the initial preferred location.
-     * This method is called after mount, for client-side hydration.
-     *
-     * @return void
-     */
-    public function init(): void
-    {
-        $this->dispatchEmit();
-    }
-
-    /**
-     * @param array $value
-     * @return void
-     */
-    public function listenPreferredNeighbor(array $value): void
-    {
-        $hasNeighborName = !empty($value['preferredNeighborName']);
-        $hasNeighborAddress = !empty($value['preferredNeighborAddress']);
-
-        $this->disabled = ($hasNeighborName || $hasNeighborAddress);
-    }
-
-    /**
-     * Updates the preferred location for drop-off delivery.
+     * Called when the location input is updated.
+     * Emits state to parent and persists the value.
      *
      * @param string $value
-     * @return string // Changed from mixed to string for more precision
+     * @return mixed
      */
-    public function updatedPreferredLocation(string $value): string
+    public function updatedPreferredLocation(string $value): mixed
     {
-        // Emit the event
-        $this->dispatchEmit();
-
-        // Use the persistFieldUpdate method to update the field
-        return $this->persistFieldUpdate(
-            'details', 
-            $value, 
+        $result = $this->persistFieldUpdate(
+            'details',
+            $value,
             Codes::SERVICE_OPTION_DROPOFF_DELIVERY
         );
+        $isActive = !empty($value);
+
+        // Notify parent about active state and value.
+        $this->emitUp('exclusiveServiceUpdated', 'preferredLocation', $isActive, [
+            'location' => $value,
+        ]);
+        return $result;
     }
 }

@@ -247,4 +247,26 @@ class ShippingOptions extends Component
         $this->updateShippingOptionSelections($quoteSelection);
         return $value;
     }
+    
+    public array $optionStates = [
+        'packstation'         => true,
+        'preferred_day'       => true,
+        'preferred_location'  => true,
+        'preferred_neighbor'  => true,
+        'no_neighbor'         => true,
+    ];
+    
+    /**
+     * Wird von den Optionen aufgerufen, um sich zu aktivieren.
+     */
+    public function activateOption(string $key): void
+    {
+        foreach ($this->optionStates as $k => $_) {
+            $this->optionStates[$k] = ($k === $key);
+        }
+
+        foreach ($this->optionStates as $k => $isActive) {
+            $this->emitTo('checkout.shipping.method.dhlpaket_bestway_' . $k, 'setShowState', $isActive);
+        }
+    }
 }
