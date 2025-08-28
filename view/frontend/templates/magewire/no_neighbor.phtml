@@ -20,7 +20,6 @@ $formatterViewModel = $viewModels->require(FormatterViewModel::class);
 $feenote = __('This service will incur additional shipping costs of $1 including VAT.')->render();
 $feenote = str_replace('$1', $formatterViewModel->currency($magewire->fee), $feenote);
 ?>
-
 <div>
     <div class="flex items-center mb-6">
         <h4 class="font-semibold">

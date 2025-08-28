@@ -60,5 +60,4 @@ class GoGreenPlus extends ShippingOptions
         $this->emitToRefresh('price-summary.total-segments');
         return $this->persistFieldUpdate('enabled', $value, Codes::SERVICE_OPTION_GOGREEN_PLUS);
     }
-
 }
