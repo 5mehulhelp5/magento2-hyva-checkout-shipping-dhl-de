@@ -52,6 +52,8 @@ class ParcelPackstation extends ShippingOptions implements EvaluationInterface
      * @var array Listens for events from the frontend and other components.
      */
     protected $listeners = [
+        'shipping_address_saved' => 'checkAndSetShippingAddress',
+        'guest_shipping_address_saved' => 'checkAndSetShippingAddress',
         'parcel_packstation_saved'   => 'setPackstation',
         'parcel_packstation_removed' => 'clearPackstation',
         'dhlPostnumberUpdated'       => 'updatedDeliveryLocationCustomerPostnumber',
