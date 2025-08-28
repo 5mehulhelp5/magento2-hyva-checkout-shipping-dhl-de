@@ -23,19 +23,22 @@ use Hyva\HyvaShippingDhl\Magewire\DeliveryOptions;
                 <?= /* @noEscape */ $block->getChildHtml('dhlpaket_bestway_parcel_packstation'); ?>
             <?php endif; ?>
 
+            <?php /*?>Todo<?php */?>
             <?php if ($magewire->activeService === null || $magewire->activeService === 'preferredDay'): ?>
-                <?= /* @noEscape */ $block->getChildHtml('dhlpaket_bestway_preferred_day'); ?>
+                <?//= /* @noEscape */ $block->getChildHtml('dhlpaket_bestway_preferred_day'); ?>
             <?php endif; ?>
 
-            <?php if ($magewire->activeService === null || $magewire->activeService === 'preferredLocation'): ?>
+            <?php if ($magewire->activeService === null || $magewire->activeService === 'preferredLocation' || $magewire->activeService === 'noNeighbor'): ?>
                 <?= /* @noEscape */ $block->getChildHtml('dhlpaket_preferred_location'); ?>
             <?php endif; ?>          
 
             <?php if ($magewire->activeService === null || $magewire->activeService === 'preferredNeighbor'): ?>
-               <?= /* @noEscape */ $block->getChildHtml('dhlpaket_preferred_neighbor'); ?>
+                <?php if ($magewire->activeService !== 'noNeighbor' || $magewire->activeService !== 'preferredLocation'): ?>
+                    <?= /* @noEscape */ $block->getChildHtml('dhlpaket_preferred_neighbor'); ?>
+                <?php endif; ?>
             <?php endif; ?>
 
-            <?php if ($magewire->activeService === null || $magewire->activeService === 'noNeighbor'): ?>
+            <?php if ($magewire->activeService === null || $magewire->activeService === 'noNeighbor' || $magewire->activeService === 'preferredLocation'): ?>
                 <?= /* @noEscape */ $block->getChildHtml('dhlpaket_no_neighbor'); ?>
             <?php endif; ?>
         <?php endif; ?>
