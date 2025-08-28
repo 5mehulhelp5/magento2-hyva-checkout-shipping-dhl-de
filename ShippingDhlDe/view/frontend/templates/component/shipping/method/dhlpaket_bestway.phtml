@@ -1,0 +1,44 @@
+<?php 
+
+declare(strict_types=1);
+
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+use Hyva\HyvaShippingDhl\Magewire\DeliveryOptions;
+
+/** @var Escaper $escaper */
+/** @var Template $block */
+/** @var DeliveryOptions $magewire */
+?>
+<div class="nrshipping-settings-container p-4 border-solid border mt-6 flex flex-col gap-y-1"
+     @shipping-country_id.window="Magewire.emitTo('checkout.shipping.method.dhlpaket_bestway', 'refresh');">
+    <h3 class="text-base font-semibold"><?= $escaper->escapeHtml(__('DHL Preferred Delivery. Delivered just the way you want.')) ?></h3>
+    <p><?= $escaper->escapeHtml(__('You decide when and where you want to receive your parcels with the recipient services of DHL.')) ?></p>
+    <p><?= $escaper->escapeHtml(__('Please choose your preferred delivery options.')) ?></p>
+    <div class="flex flex-col gap-y-4 mt-4">
+
+        <?= /* @noEscape */ $block->getChildHtml('dhlpaket_bestway_parcel_announcement'); ?> 
+        <?php if ($magewire->isShippingAddressValid): ?>
+            <?php if ($magewire->activeService === null || $magewire->activeService === 'parcelPackstation'): ?>
+                <?= /* @noEscape */ $block->getChildHtml('dhlpaket_bestway_parcel_packstation'); ?>
+            <?php endif; ?>
+
+            <?php if ($magewire->activeService === null || $magewire->activeService === 'preferredDay'): ?>
+                <?= /* @noEscape */ $block->getChildHtml('dhlpaket_bestway_preferred_day'); ?>
+            <?php endif; ?>
+
+            <?php if ($magewire->activeService === null || $magewire->activeService === 'preferredLocation'): ?>
+                <?= /* @noEscape */ $block->getChildHtml('dhlpaket_preferred_location'); ?>
+            <?php endif; ?>          
+
+            <?php if ($magewire->activeService === null || $magewire->activeService === 'preferredNeighbor'): ?>
+               <?= /* @noEscape */ $block->getChildHtml('dhlpaket_preferred_neighbor'); ?>
+            <?php endif; ?>
+
+            <?php if ($magewire->activeService === null || $magewire->activeService === 'noNeighbor'): ?>
+                <?= /* @noEscape */ $block->getChildHtml('dhlpaket_no_neighbor'); ?>
+            <?php endif; ?>
+        <?php endif; ?>
+        <?= /* @noEscape */ $block->getChildHtml('dhlpaket_gogreen_plus'); ?>
+    </div>   
+</div>

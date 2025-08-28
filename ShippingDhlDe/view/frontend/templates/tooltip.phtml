@@ -1,0 +1,42 @@
+<?php
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+
+/** @var Escaper $escaper */
+/** @var Template $block */
+/** @var ViewModelRegistry $viewModels */
+
+/** @var HeroiconsOutline $heroicons */
+$heroicons = $viewModels->require(HeroiconsOutline::class);
+?>
+<div
+    x-data="hyvaCheckoutFormElementTooltip"
+    class="relative tooltip ml-auto"
+>
+    <button
+        type="button"
+        x-on:mouseenter.self="setVisibleTrue"
+        x-on:mouseleave.self="setVisibleFalse"
+        x-on:click="toggleVisible"
+        x-on:click.outside="setVisibleFalse"
+        x-on:keyup.escape="setVisibleFalse"
+        class="align-middle hover:cursor-pointer opacity-75 hover:opacity-100"
+        aria-label="<?= $escaper->escapeHtmlAttr(__('More information')) ?>"
+    >
+        <?= $heroicons->questionMarkCircleHtml('', 24, 24, ['aria-hidden' => 'true']) ?>
+    </button>
+    <div
+        role="tooltip"
+        class="absolute top-full right-0 mt-3 px-3 py-2 bg-gray-500 text-white shadow-lg rounded-md w-80"
+        x-show="visible"
+        x-cloak
+    >
+        <div class="absolute right-3 -top-3 h-3 w-3 bg-inherit rotate-45 transform origin-bottom-left"></div>
+        <?= $escaper->escapeHtml($block->getText()) ?>
+    </div>
+</div>
