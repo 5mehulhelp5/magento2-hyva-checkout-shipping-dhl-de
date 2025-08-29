@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 namespace Hyva\ShippingDhlDe\Magewire;
@@ -7,75 +6,110 @@ namespace Hyva\ShippingDhlDe\Magewire;
 use Hyva\Checkout\Model\Magewire\Component\EvaluationInterface;
 use Hyva\Checkout\Model\Magewire\Component\EvaluationResultFactory;
 use Hyva\Checkout\Model\Magewire\Component\EvaluationResultInterface;
-use Netresearch\ShippingCore\Model\ShippingSettings\ShippingOption\Codes as Codes;
+use Netresearch\ShippingCore\Model\ShippingSettings\ShippingOption\Codes as CoreCodes;
 use Dhl\Paket\Model\ShippingSettings\ShippingOption\Codes as DhlCodes;
 use Netresearch\ShippingCore\Api\Data\ShippingSettings\ShippingOption\Selection\SelectionInterface;
 
 /**
- * Magewire component for handling DHL Packstation selection and input in the checkout.
+ * Magewire component for managing DHL "Parcel Packstation" (Packstation/Locker) delivery option.
+ *
+ * Handles delivery location selection, DHL post number validation,
+ * modal dialog state, and exclusive option management.
  */
 class ParcelPackstation extends ShippingOptions implements EvaluationInterface
 {
     /**
-     * @var bool Indicates if the Packstation modal is open.
+     * Indicates if the modal dialog for Packstation selection is open.
+     *
+     * @var bool
      */
     public bool $modalOpened = false;
 
     /**
-     * @var array Stores the current shipping address.
+     * Stores the shipping address for validation and Packstation modal pre-filling.
+     *
+     * @var array<string, string>
      */
     public array $shippingAddress = [];
 
     /**
-     * @var string Holds any validation error for the DHL postnumber.
+     * Contains error message for invalid DHL post number.
+     *
+     * @var string
      */
     public string $postnumberError = '';
 
     /**
-     * @var array Main delivery location data for the Packstation service.
+     * Holds the current delivery location values (Packstation/Locker data).
+     *
+     * @var array{
+     *   enabled: bool,
+     *   customerPostnumber: string,
+     *   type: string,
+     *   id: string,
+     *   number: string,
+     *   displayName: string,
+     *   company: string,
+     *   countryCode: string,
+     *   postalCode: string,
+     *   city: string,
+     *   street: string
+     * }
      */
     public array $deliveryLocation = [
-        'enabled' => false,
+        'enabled'            => false,
         'customerPostnumber' => '',
-        'type' => '',
-        'id' => '',
-        'number' => '',
-        'displayName' => '',
-        'company' => '',
-        'countryCode' => '',
-        'postalCode' => '',
-        'city' => '',
-        'street' => ''
+        'type'               => '',
+        'id'                 => '',
+        'number'             => '',
+        'displayName'        => '',
+        'company'            => '',
+        'countryCode'        => '',
+        'postalCode'         => '',
+        'city'               => '',
+        'street'             => '',
     ];
 
     /**
-     * @var array Listens for events from the frontend and other components.
+     * Event listeners for this component.
+     *
+     * @var array<string, string>
      */
     protected $listeners = [
-        'shipping_address_saved' => 'checkAndSetShippingAddress',
+        'shipping_address_saved'       => 'checkAndSetShippingAddress',
         'guest_shipping_address_saved' => 'checkAndSetShippingAddress',
-        'parcel_packstation_saved'   => 'setPackstation',
-        'parcel_packstation_removed' => 'clearPackstation',
-        'dhlPostnumberUpdated'       => 'updatedDeliveryLocationCustomerPostnumber',
-        'resetYourself'              => 'resetData'
+        'parcel_packstation_saved'     => 'setPackstation',
+        'parcel_packstation_removed'   => 'clearPackstation',
+        'dhlPostnumberUpdated'         => 'updatedDeliveryLocationCustomerPostnumber',
+        'activeServiceChanged'         => 'onActiveServiceChanged',
     ];
 
     /**
-     * Initializes the component with data from the current quote (DB).
+     * Lifecycle method called on component mount.
+     * Loads the current Packstation data and validates the post number.
      *
      * @return void
      */
     public function mount(): void
     {
         /** @var SelectionInterface[] $quoteSelections */
-        $quoteSelections = $this->loadFromDb(Codes::SERVICE_OPTION_DELIVERY_LOCATION);
+        $quoteSelections = $this->loadFromDb(CoreCodes::SERVICE_OPTION_DELIVERY_LOCATION);
 
         if ($quoteSelections) {
-            foreach ($this->deliveryLocation as $key => $value) {
-                $inputCode = $key === 'customerPostnumber'
-                    ? DhlCodes::SERVICE_INPUT_DELIVERY_LOCATION_ACCOUNT_NUMBER
-                    : $key;
-
+            $map = [
+                'customerPostnumber' => DhlCodes::SERVICE_INPUT_DELIVERY_LOCATION_ACCOUNT_NUMBER,
+                'type'               => 'type',
+                'id'                 => 'id',
+                'number'             => 'number',
+                'displayName'        => 'displayName',
+                'company'            => 'company',
+                'countryCode'        => 'countryCode',
+                'postalCode'         => 'postalCode',
+                'city'               => 'city',
+                'street'             => 'street',
+                'enabled'            => 'enabled',
+            ];
+            foreach ($map as $key => $inputCode) {
                 if (isset($quoteSelections[$inputCode])) {
                     $this->deliveryLocation[$key] = (string)$quoteSelections[$inputCode]->getInputValue();
                 }
@@ -85,11 +119,12 @@ class ParcelPackstation extends ShippingOptions implements EvaluationInterface
         if (!empty($this->deliveryLocation['id'])) {
             $this->deliveryLocation['enabled'] = true;
             $this->validatePostnumber();
+            $this->emitUp('requestExclusive', 'parcelPackstation');
         }
     }
 
     /**
-     * Validates if all required fields are set (for checkout validation).
+     * Evaluate the completion state for the checkout step.
      *
      * @param EvaluationResultFactory $resultFactory
      * @return EvaluationResultInterface
@@ -103,7 +138,23 @@ class ParcelPackstation extends ShippingOptions implements EvaluationInterface
     }
 
     /**
-     * Resets all fields to their default values and persists them.
+     * Handler for when the active exclusive service is changed.
+     * If another exclusive service is selected, this resets the Packstation data.
+     *
+     * @param string|null $activeService
+     * @return void
+     */
+    public function onActiveServiceChanged(?string $activeService = null): void
+    {
+        if ($activeService !== 'parcelPackstation'
+            && ($this->deliveryLocation['enabled'] || $this->deliveryLocation['id'] !== '')
+        ) {
+            $this->resetData();
+        }
+    }
+
+    /**
+     * Resets all delivery location values and releases exclusive access.
      *
      * @return void
      */
@@ -114,16 +165,13 @@ class ParcelPackstation extends ShippingOptions implements EvaluationInterface
             $inputCode = $key === 'customerPostnumber'
                 ? DhlCodes::SERVICE_INPUT_DELIVERY_LOCATION_ACCOUNT_NUMBER
                 : $key;
-            $this->persistFieldUpdate($inputCode, $value, Codes::SERVICE_OPTION_DELIVERY_LOCATION);
+            $this->persistFieldUpdate($inputCode, $value, CoreCodes::SERVICE_OPTION_DELIVERY_LOCATION);
         }
-        // Notify parent that the Packstation service is now inactive (and sync empty array)
-        $this->emitUp('exclusiveServiceUpdated', 'parcelPackstation', false, [
-            'deliveryLocation' => $this->deliveryLocation,
-        ]);
+        $this->emitUp('releaseExclusive', 'parcelPackstation');
     }
 
     /**
-     * Called from the modal or UI to clear the Packstation selection.
+     * Clears the Packstation selection.
      *
      * @return void
      */
@@ -133,9 +181,9 @@ class ParcelPackstation extends ShippingOptions implements EvaluationInterface
     }
 
     /**
-     * Called after the user selects a Packstation (via modal/map).
+     * Sets the Packstation delivery location from given data and persists it.
      *
-     * @param array $data
+     * @param array $data The delivery location data to set.
      * @return void
      */
     public function setPackstation(array $data): void
@@ -144,29 +192,30 @@ class ParcelPackstation extends ShippingOptions implements EvaluationInterface
             $data = $data['deliveryLocation'];
         }
         $this->closeModal();
+
         foreach ($this->deliveryLocation as $key => $defaultValue) {
             $value = $data[$key] ?? $defaultValue;
             $this->deliveryLocation[$key] = $value;
+
             $inputCode = $key === 'customerPostnumber'
                 ? DhlCodes::SERVICE_INPUT_DELIVERY_LOCATION_ACCOUNT_NUMBER
                 : $key;
-            $this->persistFieldUpdate($inputCode, (string)$value, Codes::SERVICE_OPTION_DELIVERY_LOCATION);
+
+            $this->persistFieldUpdate($inputCode, (string)$value, CoreCodes::SERVICE_OPTION_DELIVERY_LOCATION);
         }
+
         $this->deliveryLocation['enabled'] = true;
-        $this->persistFieldUpdate('enabled', '1', Codes::SERVICE_OPTION_DELIVERY_LOCATION);
-        
+        $this->persistFieldUpdate('enabled', '1', CoreCodes::SERVICE_OPTION_DELIVERY_LOCATION);
+
         $this->validatePostnumber();
-        
-        // Notify parent that Packstation is now active (with current array)
-        $this->emitUp('exclusiveServiceUpdated', 'parcelPackstation', true, [
-            'deliveryLocation' => $this->deliveryLocation,
-        ]);
+
+        $this->emitUp('requestExclusive', 'parcelPackstation');
     }
 
     /**
-     * Called when the postnumber field changes.
+     * Updates and validates the DHL post number when changed.
      *
-     * @param string $value
+     * @param string $value The new DHL post number.
      * @return void
      */
     public function updatedDeliveryLocationCustomerPostnumber(string $value): void
@@ -177,34 +226,21 @@ class ParcelPackstation extends ShippingOptions implements EvaluationInterface
         $this->persistFieldUpdate(
             DhlCodes::SERVICE_INPUT_DELIVERY_LOCATION_ACCOUNT_NUMBER,
             $this->deliveryLocation['customerPostnumber'],
-            Codes::SERVICE_OPTION_DELIVERY_LOCATION
+            CoreCodes::SERVICE_OPTION_DELIVERY_LOCATION
         );
-
-        $this->emitUp('exclusiveServiceUpdated', 'parcelPackstation', true);
     }
-    
+
     /**
-     * Validates the DHL customer postnumber for Packstation/locker delivery.
-     *
-     * Sets a validation error message if the postnumber is missing or invalid.
+     * Validates the DHL post number for Packstation/locker type.
      *
      * @return void
      */
     private function validatePostnumber(): void
     {
-        /** @var string $type The delivery location type (e.g. 'locker'). */
-        $type = (string)($this->deliveryLocation['type'] ?? '');
-
-        /** @var bool $isLocker True if the delivery type is a DHL locker. */
+        $type    = (string)($this->deliveryLocation['type'] ?? '');
         $isLocker = (strtolower($type) === 'locker');
-
-        /** @var string $account The trimmed DHL customer postnumber (max 10 chars). */
         $account = mb_substr(trim($this->deliveryLocation['customerPostnumber']), 0, 10);
-
-        /** @var int $len The length of the account string. */
-        $len = mb_strlen($account);
-
-        /** @var bool $isValid True if the postnumber matches 6–10 alphanumeric chars. */
+        $len     = mb_strlen($account);
         $isValid = ($len >= 6 && $len <= 10) && (bool)preg_match('/^[A-Za-z0-9]{6,10}$/u', $account);
 
         if ($isLocker && $account === '') {
@@ -217,51 +253,48 @@ class ParcelPackstation extends ShippingOptions implements EvaluationInterface
     }
 
     /**
-     * Ensures that a valid shipping address is present before opening modal.
+     * Checks the shipping address and stores its values in $shippingAddress.
      *
-     * @return bool
+     * @return bool True if address is set, false otherwise.
      */
     public function checkAndSetShippingAddress(): bool
     {
         $address = $this->getShippingAddress();
-        if (!$address) {
-            return false;
-        }
-        $street = $address->getStreetLine(1);
-        $postalCode = $address->getPostcode();
-        $city = $address->getCity();
+        if (!$address) { return false; }
+
+        $street      = $address->getStreetLine(1);
+        $postalCode  = $address->getPostcode();
+        $city        = $address->getCity();
         $countryCode = $address->getCountryId();
 
         if (empty($street) || empty($postalCode) || empty($city) || empty($countryCode)) {
             return false;
         }
         $this->shippingAddress = [
-            'street'      => $address->getStreetLine(1),
-            'city'        => $address->getCity(),
-            'postalCode'  => $address->getPostcode(),
-            'countryCode' => $address->getCountryId(),
+            'street'      => $street,
+            'city'        => $city,
+            'postalCode'  => $postalCode,
+            'countryCode' => $countryCode,
         ];
         return true;
     }
 
     /**
-     * Opens the modal for Packstation search/selection.
+     * Opens the modal dialog for Packstation selection.
      *
-     * @return bool
+     * @return bool True if modal opened, false otherwise.
      */
     public function openModal(): bool
     {
-        if (!$this->checkAndSetShippingAddress()) {
-            return false;
-        }
+        if (!$this->checkAndSetShippingAddress()) { return false; }
         $this->modalOpened = true;
         return true;
     }
 
     /**
-     * Closes the Packstation modal.
+     * Closes the modal dialog for Packstation selection.
      *
-     * @return bool
+     * @return bool Always returns false.
      */
     public function closeModal(): bool
     {

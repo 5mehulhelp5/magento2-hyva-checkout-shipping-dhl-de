@@ -1,80 +1,99 @@
 <?php
-
 declare(strict_types=1);
 
 namespace Hyva\ShippingDhlDe\Magewire;
 
-use Dhl\Paket\Model\ShippingSettings\ShippingOption\Codes;
+use Dhl\Paket\Model\ShippingSettings\ShippingOption\Codes as DhlCodes;
 use Netresearch\ShippingCore\Api\Data\ShippingSettings\ShippingOption\Selection\SelectionInterface;
 
 /**
- * Magewire component for DHL Preferred Location (drop-off delivery).
+ * Magewire component for managing the DHL "Preferred Location" (Drop-off Delivery) option.
+ *
+ * Handles enabling/disabling the option, exclusive service state, and persisting the location value.
  */
 class PreferredLocation extends ShippingOptions
 {
     /**
-     * @var string The preferred drop-off location.
+     * The customer-selected preferred drop-off location (or empty string if unset).
+     *
+     * @var string
      */
     public string $preferredLocation = '';
 
     /**
-     * @var bool If true, disables the input.
+     * Whether the preferred location option is currently disabled (because another exclusive service is active).
+     *
+     * @var bool
      */
     public bool $disabled = false;
 
     /**
-     * @var array Event listeners for this component.
+     * Event listeners for this component.
+     *
+     * @var array<string, string>
      */
     protected $listeners = [
-        'resetYourself' => 'clearValue'
+        'activeServiceChanged' => 'onActiveServiceChanged',
     ];
 
     /**
-     * Loads the initial value from the quote on mount.
+     * Lifecycle method called on component mount.
+     * Loads the current preferred location value and requests exclusivity if set.
      *
      * @return void
      */
     public function mount(): void
     {
         /** @var SelectionInterface[] $quoteSelections */
-        $quoteSelections = $this->loadFromDb(Codes::SERVICE_OPTION_DROPOFF_DELIVERY);
+        $quoteSelections = $this->loadFromDb(DhlCodes::SERVICE_OPTION_DROPOFF_DELIVERY);
 
         if ($quoteSelections && isset($quoteSelections['details'])) {
-            $this->preferredLocation = (string) $quoteSelections['details']->getInputValue();
+            $this->preferredLocation = (string)$quoteSelections['details']->getInputValue();
+            if ($this->preferredLocation !== '') {
+                // Request exclusive activation for this service.
+                $this->emitUp('requestExclusive', 'preferredLocation');
+            }
         }
     }
 
     /**
-     * Clears the value and persists an empty state.
+     * Handles changes to the active exclusive service.
+     * Disables this option and clears its value if another exclusive service becomes active.
+     *
+     * @param string|null $activeService The currently active exclusive service, or null.
+     * @return void
+     */
+    public function onActiveServiceChanged(?string $activeService = null): void
+    {
+        if ($activeService !== 'preferredLocation' && $this->preferredLocation !== '') {
+            $this->clearValue();
+        }
+        $this->disabled = ($activeService !== null && $activeService !== 'preferredLocation');
+    }
+
+    /**
+     * Clears the preferred location value and releases exclusive access.
      *
      * @return void
      */
     public function clearValue(): void
     {
         $this->preferredLocation = '';
-        $this->persistFieldUpdate('details', '', Codes::SERVICE_OPTION_DROPOFF_DELIVERY);
+        $this->persistFieldUpdate('details', '', DhlCodes::SERVICE_OPTION_DROPOFF_DELIVERY);
+        $this->emitUp('releaseExclusive', 'preferredLocation');
     }
 
     /**
-     * Called when the location input is updated.
-     * Emits state to parent and persists the value.
+     * Handler for when the preferredLocation property is updated.
+     * Persists the new value and updates exclusive state.
      *
-     * @param string $value
-     * @return mixed
+     * @param string $value The new preferred location value.
+     * @return mixed Result of the field persistence operation.
      */
     public function updatedPreferredLocation(string $value): mixed
     {
-        $result = $this->persistFieldUpdate(
-            'details',
-            $value,
-            Codes::SERVICE_OPTION_DROPOFF_DELIVERY
-        );
-        $isActive = !empty($value);
-
-        // Notify parent about active state and value.
-        $this->emitUp('exclusiveServiceUpdated', 'preferredLocation', $isActive, [
-            'location' => $value,
-        ]);
-        return $result;
+        $res = $this->persistFieldUpdate('details', $value, DhlCodes::SERVICE_OPTION_DROPOFF_DELIVERY);
+        $this->emitUp($value !== '' ? 'requestExclusive' : 'releaseExclusive', 'preferredLocation');
+        return $res;
     }
 }
