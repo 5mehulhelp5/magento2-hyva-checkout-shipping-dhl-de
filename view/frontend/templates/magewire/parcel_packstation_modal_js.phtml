@@ -1,0 +1,412 @@
+<?php 
+
+declare(strict_types=1);
+
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+use Hyva\NetresearchShippingUi\Magewire\ParcelPackstationModal;
+use Hyva\Theme\ViewModel\HyvaCsp;
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+
+/** @var Escaper $escaper */
+/** @var Template $block */
+/** @var ParcelPackstationModal $magewire */
+/** @var Hyva\Theme\ViewModel\HyvaCsp $hyvaCsp */
+/** @var ViewModelRegistry $viewModels */
+
+/** @var HeroiconsOutline $heroIcons */
+$heroicons = $viewModels->require(HeroiconsOutline::class);
+?>
+<script> 
+    function mapdata() {
+        return {
+            map: null,           
+            layers: {
+                postoffice: null,
+                locker: null,
+                servicepoint: null,
+            },
+            visibility: {
+                postoffice: true,
+                locker: true,
+                servicepoint: true,
+            },
+            address: {
+                countryCode: '',
+                city: '',
+                postalCode: '',
+                street: ''
+            },
+            showParcelShops: false,
+            mapboxApiToken: '',
+            currentDetailIndex: null,
+            selectedLocation: null,
+            isLoading: false,
+            loadfiles: false,
+            initialAddress: {},
+            locations: [],
+            init() {
+                try {
+                    const parsed = JSON.parse(this.$el.dataset.shippingAddress);
+                    this.address = {
+                        countryCode: parsed.countryCode || 'DE',
+                        city: parsed.city || '',
+                        postalCode: parsed.postalCode || '',
+                        street: parsed.street || ''
+                    };
+                } catch (e) {
+                    console.warn('Invalid address JSON in data attribute', e);
+                }
+                this.mapboxApiToken = this.$el.dataset.mapboxToken;
+                this.fetchLocations();
+
+                if (!this.loadfiles) {
+                    this.loadJsCss().then(() => {
+                        this.loadfiles = true;                          
+                        this.initMap();                            
+                        this.updateMarkers();   
+                    });
+                }                  
+            },
+            loadJsCss() {
+                return new Promise(resolve => {
+                    const script = document.createElement('script');
+                    script.type = 'text/javascript';
+                    script.src = '<?= $escaper->escapeUrl($block->getViewFileUrl("Netresearch_ShippingUi::lib/leaflet/leaflet.js")); ?>';
+                    script.async = true;
+                    script.onload = () => {
+                        const link = document.createElement('link');
+                        link.rel = 'stylesheet';
+                        link.href = '<?= $escaper->escapeUrl($block->getViewFileUrl("Netresearch_ShippingUi::lib/leaflet/leaflet.css")); ?>';
+                        link.onload = resolve;
+                        document.head.appendChild(link);
+                    };
+                    document.head.appendChild(script);
+                });
+            },
+            fetchLocations(hasRetried = false) {
+                this.isLoading = true;
+                //this.initialAddress = JSON.parse(JSON.stringify(this.address)); 
+                this.initialAddress = { ...this.address };
+
+                fetch(`${BASE_URL}rest/de/V1/nrshipping/delivery-locations/dhlpaket/search`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        searchAddress: this.address
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.length > 0) {
+                        this.locations = data;
+                        this.updateMarkers();
+                    } else {
+                        if (!hasRetried) {
+                            setTimeout(() => {
+                                console.log('Retrying fetch after 1 second...');
+                                this.fetchLocations(true);
+                            }, 500);
+                        }
+                    }
+                    this.isLoading = false;
+                })
+                .catch(error => {
+                    this.isLoading = false;
+                    this.map = false;
+                    this.initialAddress = {};
+                    dispatchMessages([
+                        {
+                            type: "error",
+                            text: "Unfortunately, the request could not be executed."
+                        }
+                    ], 3000);
+                    $wire.closeModal();
+                });
+            },
+            searchLocations() {            
+                if (JSON.stringify(this.address) === JSON.stringify(this.initialAddress)) {
+                    this.updateMarkers();
+                    return;
+                }
+
+                this.fetchLocations();
+                Object.keys(this.visibility).forEach(key => this.visibility[key] = true);
+
+                this.initialAddress = JSON.parse(JSON.stringify(this.address));
+            },
+            updateCountry() {
+                this.address.countryCode = this.$el.value;
+            },
+            isCountry() {
+                return this.address.countryCode === this.item.id;
+            },
+            setPostCode() {
+                this.address.postalCode = this.$event.target.value;
+            },
+            setCity() {
+                this.address.city = this.$event.target.value;
+            },
+            setStreet() {
+                this.address.street = this.$event.target.value;
+            },
+            initMap() {
+                if (this.loadfiles) {
+                    if (!this.map) {
+                        this.map = L.map('map');
+                        this.layers.postoffice = L.layerGroup();
+                        this.layers.locker = L.layerGroup();
+                        this.layers.servicepoint = L.layerGroup();
+
+                        const overlays = {
+                            'postoffice': this.layers.postoffice,
+                            'locker': this.layers.locker,
+                            'servicepoint': this.layers.servicepoint
+                        };
+
+                        const attribution = `© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> <strong><a href="https://www.mapbox.com/map-feedback/" target="_blank">Improve this map</a></strong>`;
+                        L.tileLayer(`https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=${this.mapboxApiToken}`, {
+                            maxZoom: 18,
+                            id: 'mapbox/streets-v11',
+                            tileSize: 512,
+                            zoomOffset: -1,
+                            accessToken: this.mapboxApiToken,
+                            attribution: attribution
+                        }).addTo(this.map);
+                    }
+                    if (this.locations && this.locations.length > 0) {
+                        this.setLocations(this.locations);
+                    }
+                    this.initLayerVisibility();
+                } 
+            },
+            setLocations(locations) {
+                if (locations && locations.length > 0 && this.map) {
+                    const firstLocation = locations[0];
+
+                    if (firstLocation.latitude && firstLocation.longitude) {
+                        this.map.setView([firstLocation.latitude, firstLocation.longitude], 15);
+                    } else {
+                        console.error('Invalid coordinates for the first location:', firstLocation);
+                    }
+
+                    locations.forEach((location, index) => {
+                        const customIcon = L.icon({
+                            iconUrl: location.icon,
+                            iconSize: [55, 55],
+                            iconAnchor: [25, 25],
+                            popupAnchor: [1, -34],
+                            className: location.shop_type,
+                        });
+                        
+                        const parcelData = {
+                          company: location.address.company,
+                          displayName: location.display_name,
+                          countryCode: location.address.country_code,
+                          postalCode: location.address.postal_code,
+                          number: location.shop_number,
+                          city: location.address.city,
+                          street: location.address.street,
+                          type: location.shop_type,
+                          id: location.shop_id
+                        };
+
+                        const encodedParcelData = encodeURIComponent(JSON.stringify(parcelData));
+
+                        let marker = L.marker([location.latitude, location.longitude], { icon: customIcon });
+
+                        if (location.shop_type === 'postoffice') {
+                            this.layers.postoffice.addLayer(marker);
+                        } else if (location.shop_type === 'locker') {
+                            this.layers.locker.addLayer(marker);
+                        } else if (location.shop_type === 'servicepoint') {
+                            this.layers.servicepoint.addLayer(marker);
+                        }
+
+                        marker.bindPopup(`
+                            <div class="flex flex-col">
+                                <span class="font-bold pb-2">${location.display_name}</span>
+                                <span class="font-bold">${location.address.company}</span>
+                                <span>${location.address.street}</span>
+                                <span>${location.address.postal_code} ${location.address.city}</span>
+                                <div class="flex flex-row gap-x-2 pt-2">
+                                    <button type="button" class="auto btn btn-primary" 
+                                            data-parcel='${encodedParcelData}'
+                                            @click="onSelectParcelShop">
+                                        <?= $escaper->escapeHtml(__('Select')) ?>
+                                    </button>
+                                    <button type="button" 
+                                            class="text-base" 
+                                            @click="onParcelShopDetailClick"
+                                            data-index="${index}">
+                                        <?= /* @noEscape */ $heroicons->informationCircleHtml('information-circle', 20, 20) ?>
+                                    </button>
+                                </div>
+                            </div>
+                        `);
+                    });
+                }
+            },
+            updateMarkers() {
+                if (this.map) {
+                    Object.values(this.layers).forEach(layerGroup => layerGroup.clearLayers());
+                }
+                this.setLocations(this.locations);
+            },                
+            setParcelShops(dataToSend) {
+                Magewire.emitTo('checkout.shipping.method.dhlpaket_bestway_packstation', 'parcel_packstation_saved', {
+                    'deliveryLocation': {
+                        type: dataToSend.type,
+                        id: dataToSend.id,
+                        number: dataToSend.number,
+                        displayName: dataToSend.displayName,
+                        company: dataToSend.company,
+                        countryCode: dataToSend.countryCode,
+                        postalCode: dataToSend.postalCode,
+                        city: dataToSend.city,
+                        street: dataToSend.street
+                    }
+                });
+                dispatchMessages([
+                    {
+                        type: "success",
+                        text: "The address has been successfully added"
+                    }
+                ], 3000);
+            },
+            initLayerVisibility() {
+                if (this.visibility.postoffice) {
+                    this.map.addLayer(this.layers.postoffice);
+                } else {
+                    this.map.removeLayer(this.layers.postoffice);
+                }
+                if (this.visibility.locker) {
+                    this.map.addLayer(this.layers.locker);
+                } else {
+                    this.map.removeLayer(this.layers.locker);
+                }
+                if (this.visibility.servicepoint) {
+                    this.map.addLayer(this.layers.servicepoint);
+                } else {
+                    this.map.removeLayer(this.layers.servicepoint);
+                }
+            },
+            onLayerToggle(event) {
+                const layer = event.target.dataset.layerType;
+                const isChecked = event.target.checked;
+                this.visibility[layer] = isChecked;
+                this.toggleLayer(layer);
+            },
+            toggleLayer(layerType) {
+                const method = this.visibility[layerType] ? 'addLayer' : 'removeLayer';
+                this.map[method](this.layers[layerType]);
+                this.centerToNextLocation();
+            },
+            centerToNextLocation() {
+                const visible = this.locations.filter(loc => this.visibility[loc.shop_type]);
+                if (visible.length > 0) {
+                    const bounds = L.latLngBounds(visible.map(loc => [loc.latitude, loc.longitude]));
+                    this.map.fitBounds(bounds, { maxZoom: 15 });
+                }
+            },
+            onCloseParcelShopDetail() {
+                this.showParcelShops = false;
+            },
+            onParcelShopDetailClick(event) {
+                const index = Number(event.currentTarget.dataset.index);
+                this.showParcelShopDetail(index);
+            },
+            hasOpeningHours() {
+                return Array.isArray(this.selectedLocation?.opening_hours) && this.selectedLocation.opening_hours.length > 0;
+            },
+            hasServices() {
+                return Array.isArray(this.selectedLocation?.services) && this.selectedLocation.services.length > 0;
+            },
+            showParcelShopDetail(index) {
+                if (this.currentDetailIndex === index) {
+                    this.showParcelShops = !this.showParcelShops;
+                } else {
+                    this.currentDetailIndex = index;
+                    this.selectedLocation = this.locations[index]; // <-- WICHTIG
+                    this.showParcelShops = true;
+                    this.map.setView([this.selectedLocation.latitude, this.selectedLocation.longitude]);
+                }
+            },
+            onSelectParcelShop(event) {
+                const raw = event.currentTarget?.dataset?.parcel;
+                if (!raw) return;
+
+                try {
+                    const decoded = decodeURIComponent(raw);
+                    const data = JSON.parse(decoded);
+                    this.setParcelShops(data);
+                } catch (e) {
+                    this.errorHandler('Invalid parcel data: ' + e.message);
+                }
+            },
+            errorHandler(message) {
+                console.error(message);
+            }
+        }
+    };
+    function validateDhlPostnumber() {
+        return {
+            
+        }
+    };
+    window.addEventListener('alpine:init', () => {
+        Alpine.data('mapdata', mapdata);                          
+    }, { once: true });
+
+<?php /*?>    (() => {
+        if (hyva && hyva.formValidation) {
+            hyva.formValidation.addRule('postnummer-alnum-6-10', (value) => {
+                const v = String(value || '').trim();
+                if (v === '') return true;
+                return /^[A-Za-z0-9]{6,10}$/.test(v)
+                    ? true
+                    : '<?= $escaper->escapeJs(__('Please enter a valid DHL post number (6–10 alphanumeric characters).')) ?>';
+            });
+
+            hyva.formValidation.addRule('required-if-locker', (value) => {
+                const type =
+                    document.querySelector('[name="delivery_location_type"]')?.value
+                    ?? window?.hyvaCheckout?.evaluation?.component?.data?.deliveryLocation?.type
+                    ?? '';
+                return String(type).toLowerCase() !== 'locker' || String(value || '').trim() !== ''
+                    ? true
+                    : '<?= $escaper->escapeJs(__('This is a required field.')) ?>';
+            });
+        }
+    })();<?php */?>
+                
+    window.addEventListener('checkout:init:evaluation', event => {
+        hyvaCheckout.evaluation.registerValidator('validateDhlPostnumber', (element, component) => {
+            const dl = component?.data?.deliveryLocation || {};
+            const type = String(dl.type || '').toLowerCase();
+            const isLocker = type === 'locker';
+
+            const input = document.querySelector('[name="dhl_postnumber"], #dhl-postnumber');
+            const raw   = (input?.value ?? dl.customerPostnumber ?? '').toString().trim();
+            const val   = raw.slice(0, 10);
+            const isValid = /^[A-Za-z0-9]{6,10}$/.test(val);
+
+            if ((isLocker && val === '') || (val !== '' && !isValid) ) {
+                if (window.Livewire) {
+                    window.Livewire.emit('dhlPostnumberUpdated', val);
+                }
+                hyvaCheckout.messenger.dispatch(
+                    'shipping:method',
+                    '<?= $escaper->escapeJs(__('Unable to save shipping information. Please check input data.')) ?>',
+                    'warning'
+                );
+                return false;
+            }
+            return true;
+        });
+    });
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>

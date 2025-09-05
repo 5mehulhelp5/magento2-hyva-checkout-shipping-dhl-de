@@ -1,0 +1,53 @@
+<?php
+
+declare(strict_types=1);
+
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+use Hyva\ShippingDhlDe\Magewire\NoNeighbor;
+use Hyva\ShippingDhlDe\ViewModel\Tooltip;
+use Hyva\Checkout\ViewModel\Checkout\Formatter as FormatterViewModel;
+
+/** @var Escaper $escaper */
+/** @var Template $block */
+/** @var NoNeighbor $magewire */
+/** @var Tooltip $tooltip */
+$tooltip = $viewModels->require(Tooltip::class);
+/** @var FormatterViewModel $formatterViewModel */
+$formatterViewModel = $viewModels->require(FormatterViewModel::class);
+
+$feenote = __('This service will incur additional shipping costs of $1 including VAT.')->render();
+$feenote = str_replace('$1', $formatterViewModel->currency($magewire->fee), $feenote);
+$feeNoteId = 'no-neighbor-fee-note'; // Eindeutige ID für die Verknüpfung
+?>
+
+<fieldset>
+    <div class="flex items-start mb-6">
+        <legend class="text-slate-800 text-base font-medium mb-0">
+            <?= $escaper->escapeHtml(__('No Neighbor Delivery: Discreet Dispatch')) ?>
+        </legend>
+        <?= $tooltip->render(__('Exclude an alternative delivery to the neighbor if you are not available when the delivery is made.')) ?>
+    </div>
+
+    <label class="inline-flex items-center gap-x-4 ml-4"
+           for="noNeighbor">
+        <input wire:model="noNeighbor"
+               type="checkbox"
+               id="noNeighbor"
+               class="field checkbox w-4 h-4 renderer-checkbox<?= $magewire->disabled ? ' opacity-50 pointer-events-none' : '' ?>"
+               <?= $magewire->disabled ? 'disabled' : '' ?>
+               <?php if ($magewire->fee > 0): ?>
+                   aria-describedby="<?= $escaper->escapeHtmlAttr($feeNoteId) ?>"
+               <?php endif; ?>
+        />
+        <span class="text-gray-700 hover:cursor-pointer">
+            <?= $escaper->escapeHtml(__('Use No Neighbour Delivery Service')) ?>
+        </span>
+    </label>
+    
+    <?php if ($magewire->fee > 0): ?>
+        <p class="text-sm" id="<?= $escaper->escapeHtmlAttr($feeNoteId) ?>">
+            <?= $escaper->escapeHtml($feenote); ?>
+        </p>
+    <?php endif; ?>
+</fieldset>

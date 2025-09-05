@@ -1,0 +1,60 @@
+<?php
+
+declare(strict_types=1);
+
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+use Hyva\ShippingDhlDe\Magewire\PreferredNeighbor;
+use Hyva\ShippingDhlDe\ViewModel\Tooltip;
+
+/** @var Escaper $escaper */
+/** @var Template $block */
+/** @var PreferredNeighbor $magewire */
+/** @var Tooltip $tooltip */
+$tooltip = $viewModels->require(Tooltip::class);
+
+$descriptionId = 'preferred-neighbor-desc'; // Eindeutige ID
+$descriptionText = __('Declare a person in your immediate neighborhood whom we can hand out your parcel. This person should live in the same building, directly opposite or next door.');
+?>
+
+<fieldset 
+    aria-describedby="<?= $escaper->escapeHtmlAttr($descriptionId) ?>">
+    
+    <div class="flex flex-row items-start" id="<?= $escaper->escapeHtmlAttr($descriptionId) ?>">
+        <legend class="text-slate-800 text-base font-medium mb-0">
+            <?= $escaper->escapeHtml(__('Preferred Neighbor: Delivery to a neighbor of your choice')) ?>
+        </legend>
+        <?= /* @noEscape */ $tooltip->render($descriptionText) ?>
+    </div>
+    
+    <div class="ml-4 mr-10 flex flex-col gap-y-4 mt-2">
+        <div>
+            <label for="preferred_neighbor_name">
+                <span>
+                    <?= $escaper->escapeHtml(__('Neighbor name')) ?>
+                </span>
+            </label>
+            <input wire:model.lazy="preferredNeighborName"
+                   type="text"
+                   id="preferred_neighbor_name"
+                   class="block w-full form-input grow renderer-text<?= $magewire->disabled ? ' opacity-50 pointer-events-none' : '' ?>"
+                   <?= $magewire->disabled ? 'disabled' : '' ?>
+                   placeholder="<?= $escaper->escapeHtmlAttr(__('First name, last name of neighbor'))?>"
+                   />
+        </div>
+        <div>
+            <label for="preferred_neighbor_address">
+                <span>
+                    <?= $escaper->escapeHtml(__('Neighbor address')) ?>
+                </span>
+            </label>
+            <input wire:model.lazy="preferredNeighborAddress"
+                   id="preferred_neighbor_address"
+                   class="block w-full form-input grow renderer-text<?= $magewire->disabled ? ' opacity-50 pointer-events-none' : '' ?>"
+                   type="text"
+                   <?= $magewire->disabled ? 'disabled' : '' ?>
+                   placeholder="<?= $escaper->escapeHtmlAttr(__('Street, number, postal code, city'))?>"
+                   />
+        </div>
+    </div>
+</fieldset>
