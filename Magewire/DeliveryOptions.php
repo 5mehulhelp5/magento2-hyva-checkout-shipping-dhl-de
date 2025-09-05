@@ -86,8 +86,9 @@ class DeliveryOptions extends ShippingOptions
      */
     public function releaseExclusiveAccess(string $serviceName): void
     {
-        if ($this->activeService !== $serviceName) {
-            return; // Only release if this service is currently active.
+        if ($this->activeService !== null) {
+            $this->activeService = null;
+            $this->emit('activeServiceChanged', null);
         }
         $this->activeService = null;
         $this->emit('activeServiceChanged', null);
