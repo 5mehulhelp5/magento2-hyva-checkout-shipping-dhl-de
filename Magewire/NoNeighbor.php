@@ -65,6 +65,10 @@ class NoNeighbor extends ShippingOptions
         }
 
         $this->fee = (float)$this->scopeConfig->getValue(ModuleConfig::CONFIG_PATH_NO_NEIGHBOR_DELIVERY_CHARGE);
+        
+        if (!$this->noNeighbor) {
+            $this->checkForOtherActiveServices();
+        }
     }
 
     /**
@@ -107,5 +111,25 @@ class NoNeighbor extends ShippingOptions
         $this->emitUp($value ? 'requestExclusive' : 'releaseExclusive', 'noNeighbor');
         $this->emitToRefresh('price-summary.total-segments');
         return $res;
+    }
+    
+    /**
+     * Checks on page load if another exclusive service is already active in the quote.
+     * If so, this component disables itself immediately without waiting for events.
+     */
+    private function checkForOtherActiveServices(): void
+    {
+        $otherExclusiveServices = [
+            DhlCodes::SERVICE_OPTION_NEIGHBOR_DELIVERY,
+            DhlCodes::SERVICE_OPTION_PARCEL_PACKSTATION,
+        ];
+
+        foreach ($otherExclusiveServices as $serviceCode) {
+            $selections = $this->loadFromDb($serviceCode);
+            if ($this->selectionsHaveValue($selections)) {
+                $this->disabled = true;
+                return;
+            }
+        }
     }
 }
