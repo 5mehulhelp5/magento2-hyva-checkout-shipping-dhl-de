@@ -23,9 +23,11 @@ DHL Germany partner module for Magento
     - [X] DHL Packstation, a parcel store or a post office branch (MapBox API token)
           RestApi: rest/de/V1/nrshipping/delivery-locations/dhlpaket/search
     - [ ] Delivery Day
-    - [X] Package notification
-    - [ ] Preferred neighbor delivery
-    - [ ] Drop-off location
+    - [X] Package announcement
+    - [X] Preferred neighbor delivery
+    - [X] No neighbor delivery
+    - [X] Drop-off location
+    - [X] GoGreen plus
 - [ ] Submoduls (Optional):
     - [ ] ADDRESSFACTORY - https://commercemarketplace.adobe.com/deutschepost-module-autocomplete-m2.html
     - [ ] DATAFACTORY Autocomplete - https://commercemarketplace.adobe.com/deutschepost-module-addressfactory-m2.html
