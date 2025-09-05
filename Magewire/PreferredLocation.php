@@ -109,7 +109,6 @@ class PreferredLocation extends ShippingOptions
     {
         $otherExclusiveServices = [
             DhlCodes::SERVICE_OPTION_NEIGHBOR_DELIVERY,
-            DhlCodes::SERVICE_OPTION_NO_NEIGHBOR_DELIVERY,
         ];
 
         foreach ($otherExclusiveServices as $serviceCode) {
