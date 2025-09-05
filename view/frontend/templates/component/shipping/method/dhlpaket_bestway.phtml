@@ -41,7 +41,9 @@ use Hyva\HyvaShippingDhl\Magewire\DeliveryOptions;
             <?php if ($magewire->activeService === null || $magewire->activeService === 'noNeighbor' || $magewire->activeService === 'preferredLocation'): ?>
                 <?= /* @noEscape */ $block->getChildHtml('dhlpaket_no_neighbor'); ?>
             <?php endif; ?>
+
+             <?= /* @noEscape */ $block->getChildHtml('dhlpaket_gogreen_plus'); ?>
         <?php endif; ?>
-        <?= /* @noEscape */ $block->getChildHtml('dhlpaket_gogreen_plus'); ?>
     </div>   
 </div>
+
