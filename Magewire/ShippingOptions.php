@@ -236,4 +236,25 @@ abstract class ShippingOptions extends Component
             $this->emitTo('checkout.shipping.method.dhlpaket_bestway_' . $k, 'setShowState', $isActive);
         }
     }
+    
+    /**
+     * Checks if any selection input has a non-empty value.
+     *
+     * @param array|null $selections
+     * @return bool
+     */
+    protected function selectionsHaveValue(?array $selections): bool
+    {
+        if (empty($selections)) {
+            return false;
+        }
+
+        foreach ($selections as $selection) {
+            if ($selection->getInputValue() !== null && $selection->getInputValue() !== '') {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
