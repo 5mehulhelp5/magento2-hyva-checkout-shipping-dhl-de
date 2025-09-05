@@ -64,6 +64,10 @@ class PreferredNeighbor extends ShippingOptions
                 $this->emitUp('requestExclusive', 'preferredNeighbor');
             }
         }
+        
+        if (!$this->preferredNeighborName && !$this->preferredNeighborAddress) {
+            $this->checkForOtherActiveServices();
+        }
     }
 
     /**
@@ -126,5 +130,25 @@ class PreferredNeighbor extends ShippingOptions
         $this->persistFieldUpdate('address', $value, DhlCodes::SERVICE_OPTION_NEIGHBOR_DELIVERY);
         $this->emitUp($active ? 'requestExclusive' : 'releaseExclusive', 'preferredNeighbor');
         return $value;
+    }
+    
+    /**
+     * Checks on page load if another exclusive service is already active in the quote.
+     * If so, this component disables itself immediately without waiting for events.
+     */
+    private function checkForOtherActiveServices(): void
+    {
+        $otherExclusiveServices = [
+            DhlCodes::SERVICE_OPTION_DROPOFF_DELIVERY,
+            DhlCodes::SERVICE_OPTION_NO_NEIGHBOR_DELIVERY,
+        ];
+        
+        foreach ($otherExclusiveServices as $serviceCode) {
+            $selections = $this->loadFromDb($serviceCode);
+            if ($this->selectionsHaveValue($selections)) {
+                $this->disabled = true;
+                return;
+            }
+        }
     }
 }
