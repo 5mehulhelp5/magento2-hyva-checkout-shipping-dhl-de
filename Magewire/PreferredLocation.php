@@ -54,6 +54,10 @@ class PreferredLocation extends ShippingOptions
                 $this->emitUp('requestExclusive', 'preferredLocation');
             }
         }
+        
+        if ($this->preferredLocation === '') {
+            $this->checkForOtherActiveServices();
+        }
     }
 
     /**
@@ -95,5 +99,25 @@ class PreferredLocation extends ShippingOptions
         $res = $this->persistFieldUpdate('details', $value, DhlCodes::SERVICE_OPTION_DROPOFF_DELIVERY);
         $this->emitUp($value !== '' ? 'requestExclusive' : 'releaseExclusive', 'preferredLocation');
         return $res;
+    }
+    
+    /**
+     * Checks on page load if another exclusive service is already active in the quote.
+     * If so, this component disables itself immediately without waiting for events.
+     */
+    private function checkForOtherActiveServices(): void
+    {
+        $otherExclusiveServices = [
+            DhlCodes::SERVICE_OPTION_NEIGHBOR_DELIVERY,
+            DhlCodes::SERVICE_OPTION_NO_NEIGHBOR_DELIVERY,
+        ];
+
+        foreach ($otherExclusiveServices as $serviceCode) {
+            $selections = $this->loadFromDb($serviceCode);
+            if ($this->selectionsHaveValue($selections)) {
+                $this->disabled = true;
+                return;
+            }
+        }
     }
 }
