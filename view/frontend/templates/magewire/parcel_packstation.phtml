@@ -84,7 +84,7 @@ $postnumberDescriptionId = 'dhl-postnumber-description';
                         <div class="field-wrapper field-type-text field field-reserved my-3 flex flex-col items-start justify-start
                                 <?= !empty($magewire->postnumberError) ? ' field-error' : '' ?>">
                             <div class="inline-flex items-center">
-                                <label class="label font-bold mr-3"
+                                <label class="text-slate-800 text-base font-medium m-3 ml-0"
                                        for="<?= $escaper->escapeHtmlAttr($postnumberInputId) ?>">
                                     <?= $escaper->escapeHtml(__('DHL Post Number')) ?>
                                 </label>
@@ -131,4 +131,5 @@ $postnumberDescriptionId = 'dhl-postnumber-description';
             </div>
         </div>
     <?php endif; ?>
+
 </fieldset>
