@@ -18,7 +18,7 @@ $formatterViewModel = $viewModels->require(FormatterViewModel::class);
 
 $feenote = __('This service will incur additional shipping costs of $1 including VAT.')->render();
 $feenote = str_replace('$1', $formatterViewModel->currency($magewire->fee), $feenote);
-$feeNoteId = 'no-neighbor-fee-note'; // Eindeutige ID für die Verknüpfung
+$feeNoteId = 'no-neighbor-fee-note';
 ?>
 
 <fieldset>
@@ -50,4 +50,5 @@ $feeNoteId = 'no-neighbor-fee-note'; // Eindeutige ID für die Verknüpfung
             <?= $escaper->escapeHtml($feenote); ?>
         </p>
     <?php endif; ?>
+
 </fieldset>
