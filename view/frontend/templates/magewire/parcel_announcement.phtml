@@ -17,7 +17,7 @@ $descriptionId = 'parcel-announcement-desc';
 $descriptionText = __('Your e-mail address will be sent to DHL upon enabling, after which DHL will trigger a package announcement for your shipment. The e-mail address will exclusively be used for the announcement of this shipment.');
 ?>
 
-<fieldset>
+<fieldset class="p-4 bg-white rounded-lg mt-0">
     <div class="flex items-start mb-2" id="<?= $escaper->escapeHtmlAttr($descriptionId) ?>">
         <legend class="text-slate-800 text-base font-medium mb-0">
             <?= $escaper->escapeHtml(__('Parcel Announcement')) ?>
@@ -25,10 +25,10 @@ $descriptionText = __('Your e-mail address will be sent to DHL upon enabling, af
         <?= $tooltip->render($descriptionText) ?>
     </div>
 
-    <label class="inline-flex items-center gap-x-4 ml-4"
+    <label class="inline-flex items-start gap-x-4"
            for="parcelAnnouncement">
         <input id="parcelAnnouncement"
-               class="field checkbox w-4 h-4 renderer-checkbox"
+               class="form-checkbox flex-none"
                type="checkbox"
                wire:model="parcelAnnouncement"
                aria-describedby="<?= $escaper->escapeHtmlAttr($descriptionId) ?>"
@@ -37,5 +37,4 @@ $descriptionText = __('Your e-mail address will be sent to DHL upon enabling, af
             <?= $escaper->escapeHtml(__('Enable DHL parcel notification')) ?>
         </span>
     </label>
-
 </fieldset>

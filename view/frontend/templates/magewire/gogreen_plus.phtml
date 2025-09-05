@@ -18,21 +18,21 @@ $formatterViewModel = $viewModels->require(FormatterViewModel::class);
 
 $feenote = __('This service will incur additional shipping costs of $1 including VAT.')->render();
 $feenote = str_replace('$1', $formatterViewModel->currency($magewire->fee), $feenote);
-$feeNoteId = 'gogreen-plus-fee-note';
+$feeNoteId = 'gogreen-plus-fee-note'; // Eindeutige ID für die Verknüpfung
 ?>
 
-<fieldset>
-    <div class="flex items-start mb-6">
+<fieldset class="p-4 bg-white rounded-lg mt-0">
+    <div class="flex items-start mb-2">
         <legend class="text-slate-800 text-base font-medium mb-0">
             <?= $escaper->escapeHtml(__('GoGreen Plus: Climate Neutral Shipping')) ?>
         </legend>
         <?= /* @noEscape */ $tooltip->render(__('Climate-neutral shipping with DHL GoGreen Plus. Available for domestic German shipments only.')) ?>
     </div>
 
-    <label class="inline-flex items-center gap-x-4 ml-4"
+    <label class="inline-flex items-start gap-x-4"
            for="gogreen_plus_enabled">
         <input id="gogreen_plus_enabled"
-               class="field checkbox w-4 h-4 renderer-checkbox"
+               class="form-checkbox flex-none"
                type="checkbox"
                wire:model="goGreenPlusEnabled"
                <?php if ($magewire->fee > 0): ?>
@@ -49,5 +49,4 @@ $feeNoteId = 'gogreen-plus-fee-note';
             <?= $escaper->escapeHtml($feenote); ?>
         </p>
     <?php endif; ?>
-
 </fieldset>

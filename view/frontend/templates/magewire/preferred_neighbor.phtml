@@ -17,9 +17,7 @@ $descriptionId = 'preferred-neighbor-desc';
 $descriptionText = __('Declare a person in your immediate neighborhood whom we can hand out your parcel. This person should live in the same building, directly opposite or next door.');
 ?>
 
-<fieldset 
-    aria-describedby="<?= $escaper->escapeHtmlAttr($descriptionId) ?>">
-    
+<fieldset class="p-4 bg-white rounded-lg mt-0">    
     <div class="flex flex-row items-start" id="<?= $escaper->escapeHtmlAttr($descriptionId) ?>">
         <legend class="text-slate-800 text-base font-medium mb-0">
             <?= $escaper->escapeHtml(__('Preferred Neighbor: Delivery to a neighbor of your choice')) ?>
@@ -27,9 +25,9 @@ $descriptionText = __('Declare a person in your immediate neighborhood whom we c
         <?= /* @noEscape */ $tooltip->render($descriptionText) ?>
     </div>
     
-    <div class="ml-4 mr-10 flex flex-col gap-y-4 mt-2">
+    <div class="flex flex-col gap-y-4 mt-2">
         <div>
-            <label for="preferred_neighbor_name">
+            <label for="preferred_neighbor_name" class="label text-sm text-slate-700">
                 <span>
                     <?= $escaper->escapeHtml(__('Neighbor name')) ?>
                 </span>
@@ -43,7 +41,7 @@ $descriptionText = __('Declare a person in your immediate neighborhood whom we c
                    />
         </div>
         <div>
-            <label for="preferred_neighbor_address">
+            <label for="preferred_neighbor_address" class="label text-sm text-slate-700">
                 <span>
                     <?= $escaper->escapeHtml(__('Neighbor address')) ?>
                 </span>
@@ -57,5 +55,4 @@ $descriptionText = __('Declare a person in your immediate neighborhood whom we c
                    />
         </div>
     </div>
-
 </fieldset>

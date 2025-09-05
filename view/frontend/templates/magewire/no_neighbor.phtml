@@ -21,20 +21,20 @@ $feenote = str_replace('$1', $formatterViewModel->currency($magewire->fee), $fee
 $feeNoteId = 'no-neighbor-fee-note';
 ?>
 
-<fieldset>
-    <div class="flex items-start mb-6">
+<fieldset class="p-4 bg-white rounded-lg mt-0">
+    <div class="flex items-start mb-2">
         <legend class="text-slate-800 text-base font-medium mb-0">
             <?= $escaper->escapeHtml(__('No Neighbor Delivery: Discreet Dispatch')) ?>
         </legend>
         <?= $tooltip->render(__('Exclude an alternative delivery to the neighbor if you are not available when the delivery is made.')) ?>
     </div>
 
-    <label class="inline-flex items-center gap-x-4 ml-4"
+    <label class="inline-flex items-start gap-x-4"
            for="noNeighbor">
         <input wire:model="noNeighbor"
                type="checkbox"
                id="noNeighbor"
-               class="field checkbox w-4 h-4 renderer-checkbox<?= $magewire->disabled ? ' opacity-50 pointer-events-none' : '' ?>"
+               class="form-checkbox flex-none <?= $magewire->disabled ? ' opacity-50 pointer-events-none' : '' ?>"
                <?= $magewire->disabled ? 'disabled' : '' ?>
                <?php if ($magewire->fee > 0): ?>
                    aria-describedby="<?= $escaper->escapeHtmlAttr($feeNoteId) ?>"
@@ -50,5 +50,4 @@ $feeNoteId = 'no-neighbor-fee-note';
             <?= $escaper->escapeHtml($feenote); ?>
         </p>
     <?php endif; ?>
-
 </fieldset>

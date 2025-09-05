@@ -43,7 +43,7 @@ $shippingAddress = [
         </legend>
         <div class="grid grid-cols-12 gap-4">
             <div class="col-span-12 md:col-span-6 field-wrapper field-type-text">
-                <label for="shipping-country" class="font-semibold">
+                <label for="shipping-country" class="label text-sm text-slate-700">
                     <span><?= $escaper->escapeHtml(__('Country')) ?></span>
                 </label>
                 <select id="shipping-country"
@@ -56,7 +56,7 @@ $shippingAddress = [
                 </select>
             </div>
             <div class="col-span-12 md:col-span-6 field-wrapper field-type-text">
-                <label for="shipping-city" class="font-semibold">
+                <label for="shipping-city" class="label text-sm text-slate-700">
                     <span><?= $escaper->escapeHtml(__('City')) ?></span>
                 </label>
                 <input type="text"
@@ -67,7 +67,7 @@ $shippingAddress = [
                        placeholder="<?= $escaper->escapeHtmlAttr(__('City')) ?>" />
             </div>
             <div class="col-span-12 md:col-span-6 field-wrapper field-type-text">
-                <label for="shipping-postalcode" class="font-semibold">
+                <label for="shipping-postalcode" class="label text-sm text-slate-700">
                     <span><?= $escaper->escapeHtml(__('Postal Code')) ?></span>
                 </label>
                 <input type="text"
@@ -78,7 +78,7 @@ $shippingAddress = [
                        placeholder="<?= $escaper->escapeHtmlAttr(__('Postal Code')) ?>" />
             </div>
             <div class="col-span-12 md:col-span-6 field-wrapper field-type-text">
-                <label for="shipping-street" class="font-semibold">
+                <label for="shipping-street" class="label text-sm text-slate-700">
                     <span><?= $escaper->escapeHtml(__('Street')) ?></span>
                 </label>
                 <input type="text"
