@@ -45,8 +45,9 @@ $feeNoteId = 'gogreen-plus-fee-note'; // Eindeutige ID für die Verknüpfung
     </label>
     
     <?php if ($magewire->fee > 0): ?>
-        <p class="text-sm" id="<?= $escaper->escapeHtmlAttr($feeNoteId) ?>">
+        <p class="form-hint-text mt-2 text-sm text-slate-500 w-full" id="<?= $escaper->escapeHtmlAttr($feeNoteId) ?>">
             <?= $escaper->escapeHtml($feenote); ?>
         </p>
     <?php endif; ?>
+
 </fieldset>
