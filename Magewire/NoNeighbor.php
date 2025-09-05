@@ -121,7 +121,6 @@ class NoNeighbor extends ShippingOptions
     {
         $otherExclusiveServices = [
             DhlCodes::SERVICE_OPTION_NEIGHBOR_DELIVERY,
-            DhlCodes::SERVICE_OPTION_PARCEL_PACKSTATION,
         ];
 
         foreach ($otherExclusiveServices as $serviceCode) {
